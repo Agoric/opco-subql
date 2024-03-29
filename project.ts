@@ -25,17 +25,11 @@ const project: CosmosProject = {
     file: "./schema.graphql",
   },
   network: {
-    /* The unique chainID of the Cosmos Zone */
+    // chainId: "agoriclocal",
+    // endpoint: ["http://host.docker.internal:26657/"],
     chainId: "agoric-3",
-    /**
-     * These endpoint(s) should be public non-pruned archive node
-     * We recommend providing more than one endpoint for improved reliability, performance, and uptime
-     * Public nodes may be rate limited, which can affect indexing speed
-     * When developing your project we suggest getting a private API key
-     * If you use a rate limited endpoint, adjust the --batch-size and --workers parameters
-     * These settings can be found in your docker-compose.yaml, they will slow indexing but prevent your project being rate limited
-     */
-    endpoint: ["https://agoric-rpc.stakely.io"],
+    endpoint: ["https://main-a.rpc.agoric.net:443"],
+
     chaintypes: new Map([
       [
         "cosmos.slashing.v1beta1",
@@ -63,7 +57,10 @@ const project: CosmosProject = {
   dataSources: [
     {
       kind: CosmosDatasourceKind.Runtime,
-      startBlock: 11628269,
+      // First block of mainnet is 2115669
+      startBlock: 2115669,
+      // startBlock: 14347000,
+      // startBlock: 2,
       mapping: {
         file: "./dist/index.js",
         handlers: [
@@ -73,23 +70,23 @@ const project: CosmosProject = {
           //     handler: 'handleEvent',
           //     kind: CosmosHandlerKind.Block,
           // },
+          // {
+          //   handler: "handleEvent",
+          //   kind: CosmosHandlerKind.Event,
+          //   filter: {
+          //     type: "transfer",
+          //     messageFilter: {
+          //       type: "/cosmos.bank.v1beta1.MsgSend",
+          //     },
+          //   },
+          // },
           {
-            handler: "handleEvent",
+            handler: 'handleStateChangeEvent',
             kind: CosmosHandlerKind.Event,
             filter: {
-              type: "transfer",
-              messageFilter: {
-                type: "/cosmos.bank.v1beta1.MsgSend",
-              },
+              type: 'state_change',
             },
-          },
-          {
-            handler: "handleMessage",
-            kind: CosmosHandlerKind.Message,
-            filter: {
-              type: "/cosmos.bank.v1beta1.MsgSend",
-            },
-          },
+          }
         ],
       },
     },

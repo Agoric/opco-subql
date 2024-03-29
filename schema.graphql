@@ -30,3 +30,140 @@ type Message @entity {
   to: String!
   amount: String!
 }
+
+type StateChangeEvent @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  module: String! @index
+  path: String!
+  idx: Int!
+  slots: String!
+  body: String!
+}
+
+type OraclePrice @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  priceFeedName: String!
+  typeInAmount: BigInt!
+  typeOutAmount: BigInt!
+  typeInName: String!
+  typeOutName: String!
+}
+
+type PsmMetric @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  coin: String!
+  token: String!
+  anchorPoolBalance: BigInt!
+  feePoolBalance: BigInt!
+  mintedPoolBalance: BigInt!
+  totalAnchorProvided: BigInt!
+  totalMintedProvided: BigInt!
+}
+
+type PsmGovernance @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  coin: String!
+  token: String!
+  mintLimit: BigInt!
+  giveMintedFeeDenominator: BigInt!
+  giveMintedFeeNumerator: BigInt!
+  wantedMintedFeeDenominator: BigInt!
+  wantedMintedFeeNumerator: BigInt!
+}
+
+type BoardAux @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  allegedName: String! @index
+  assetKind: String!
+  decimalPlaces: Int!
+}
+
+type Wallet @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  address: String! @index
+  vault: [Vault] @derivedFrom(field:"wallet")
+}
+
+type Vault @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  balance: BigInt
+  coin: String @index
+  token: String @index
+  debt: BigInt
+  state: String
+  wallet: Wallet!
+}
+
+type VaultManagerMetrics @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  liquidatingCollateralBrand: String!
+  liquidatingCollateralValue: BigInt!
+  liquidatingDebtBrand: String!
+  liquidatingDebtValue: BigInt!
+  lockedQuoteDenominator: BigInt!
+  lockedQuoteNumerator: BigInt!
+  numActiveVaults: BigInt!
+  numLiquidatingVaults: BigInt!
+  numLiquidationsAborted: BigInt!
+  numLiquidationsCompleted: BigInt!
+  retainedCollateral: BigInt!
+  totalCollateral: BigInt!
+  totalCollateralSold: BigInt!
+  totalDebt: BigInt!
+  totalOverageReceived: BigInt!
+  totalProceedsReceived: BigInt!
+  totalShortfallReceived: BigInt!
+}
+
+type VaultManagerGovernance @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  debtLimit: BigInt!
+  interestRateDenominator: BigInt!
+  interestRateNumerator: BigInt!
+  liquidationMarginDenominator: BigInt!
+  liquidationMarginNumerator: BigInt!
+  liquidationPaddingDenominator: BigInt!
+  liquidationPaddingNumerator: BigInt!
+  liquidationPenaltyDenominator: BigInt!
+  liquidationPenaltyNumerator: BigInt!
+  mintFeeDenominator: BigInt!
+  mintFeeNumerator: BigInt!
+}
+
+type ReserveAllocationMetrics @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  token: String! @index
+  key: String! @index
+  value: BigInt!
+  reserveMetrics: ReserveMetrics!
+}
+
+type ReserveMetrics @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  shortfallBalance: BigInt!
+  totalFeeBurned: BigInt!
+  totalFeeMinted: BigInt!
+  allocations: [ReserveAllocationMetrics] @derivedFrom(field:"reserveMetrics")
+}

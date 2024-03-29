@@ -87,3 +87,22 @@ Take a look at some of our advanced features to take your project to the next le
 ## Need Help?
 
 The fastest way to get support is by [searching our documentation](https://academy.subquery.network), or by [joining our discord](https://discord.com/invite/subquery) and messaging us in the `#technical-support` channel.
+
+### CosmosHandlerKind.Event Filter Types
+
+* active_proposal
+* burn
+* coin_received
+* coin_spent
+* coinbase
+* commission
+* message
+* mint
+* proposal_deposit
+* proposal_vote
+* proposer_reward
+* rewards
+* state_change
+* storage
+* submit_proposal
+* transfer

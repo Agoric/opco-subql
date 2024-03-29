@@ -22,7 +22,7 @@ services:
     depends_on:
       "postgres":
         condition: service_healthy
-    restart: unless-stopped
+    restart: always
     environment:
       DB_USER: postgres
       DB_PASS: postgres
@@ -37,15 +37,17 @@ services:
       - --db-schema=app
       - --workers=4
       - --batch-size=30
-      - --unfinalized-blocks=true
+      # - --log-level=debug
+      # - --unfinalized-blocks=true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://subquery-node:3000/ready"]
       interval: 3s
       timeout: 5s
       retries: 10
 
+
   graphql-engine:
-    image: subquerynetwork/subql-query:latest
+    image: onfinality/subql-query:latest
     ports:
       - 3000:3000
     depends_on:
