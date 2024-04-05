@@ -87,3 +87,11 @@ export function b64decode(val: string) {
 export function b64encode(val: string) {
   return Buffer.from(val).toString('base64');
 }
+
+export function dateToDayKey(timestamp: any): number {
+  const date = new Date(timestamp);
+  const year = date.getUTCFullYear();
+  const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+  const day = date.getUTCDate().toString().padStart(2, '0');
+  return parseInt(`${year}${month}${day}`);
+}
