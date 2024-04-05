@@ -58,9 +58,11 @@ const project: CosmosProject = {
     {
       kind: CosmosDatasourceKind.Runtime,
       // First block of mainnet is 2115669
-      startBlock: 2115669,
+      // startBlock: 2115669,
       // startBlock: 14347000,
-      // startBlock: 2,
+      // startBlock: 12306806,
+      startBlock: 13017175,
+
       mapping: {
         file: "./dist/index.js",
         handlers: [

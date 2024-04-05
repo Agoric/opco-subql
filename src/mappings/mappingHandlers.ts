@@ -1,8 +1,32 @@
-import {  Message, TransferEvent, StateChangeEvent, OraclePrice, PsmMetric, PsmGovernance, Wallet, Vault, VaultManagerMetrics, VaultManagerGovernance, ReserveMetrics, ReserveAllocationMetrics, BoardAux } from "../types";
 import {
-  CosmosEvent,
-} from "@subql/types-cosmos";
-import { b64encode, b64decode, extractStoragePath, getStateChangeModule, extractBrand, resolveBrandNamesAndValues } from "./utils";
+  Message,
+  TransferEvent,
+  StateChangeEvent,
+  OraclePrice,
+  OraclePriceDaily,
+  PsmMetric,
+  PsmGovernance,
+  Wallet,
+  Vault,
+  VaultManagerMetrics,
+  VaultManagerGovernance,
+  ReserveMetrics,
+  ReserveAllocationMetrics,
+  BoardAux,
+  VaultManagerMetricsDaily,
+  PsmMetricDaily,
+  ReserveAllocationMetricsDaily,
+} from "../types";
+import { CosmosEvent } from "@subql/types-cosmos";
+import {
+  b64encode,
+  b64decode,
+  extractStoragePath,
+  getStateChangeModule,
+  extractBrand,
+  resolveBrandNamesAndValues,
+  dateToDayKey,
+} from "./utils";
 
 const VALUE_KEY = b64encode('value');
 const STORE_KEY = b64encode('store');
@@ -13,8 +37,6 @@ const KEY_KEY = b64encode('key');
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
-
-// Write a test for the following function in src/test/mappingHandlers.test.ts
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block } = cosmosEvent;
@@ -55,9 +77,9 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   const path = extractStoragePath(b64decode(keyAttr.value));
   const module = getStateChangeModule(path);
-  
+
   const recordSaves: (Promise<void> | undefined)[] = [];
-  
+
   async function saveStateEvent(idx: number, value: any, payload: any) {
     const record = new StateChangeEvent(
       `${data.blockHeight}:${cosmosEvent.idx}:${idx}`,
@@ -74,6 +96,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
   }
 
   async function savePsmMetrics(payload: any) {
+    savePsmMetricDaily(payload);
     const psmMetric = new PsmMetric(
       path,
       BigInt(data.blockHeight),
@@ -86,10 +109,48 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
       BigInt(payload.totalAnchorProvided.__value),
       BigInt(payload.totalMintedProvided.__value)
     );
-    // logger.info("savePsmMetrics: " + JSON.stringify(psmMetric));
     recordSaves.push(psmMetric.save());
   }
 
+  async function savePsmMetricDaily(payload: any) {
+    const dateKey = dateToDayKey(block.block.header.time);
+  
+    let state = await getPsmMetricDaily(path, dateKey);
+  
+    state.token = path.split('.')[3];
+  
+    state.anchorPoolBalanceLast = BigInt(payload.anchorPoolBalance.__value);
+    state.feePoolBalanceLast = BigInt(payload.feePoolBalance.__value);
+    state.mintedPoolBalanceLast = BigInt(payload.mintedPoolBalance.__value);
+    state.totalAnchorProvidedLast = BigInt(payload.totalAnchorProvided.__value);
+    state.totalMintedProvidedLast = BigInt(payload.totalMintedProvided.__value);
+  
+    state.anchorPoolBalanceSum = (state.anchorPoolBalanceSum ?? BigInt(0)) + BigInt(payload.anchorPoolBalance.__value);
+    state.feePoolBalanceSum = (state.feePoolBalanceSum ?? BigInt(0)) + BigInt(payload.feePoolBalance.__value);
+    state.mintedPoolBalanceSum = (state.mintedPoolBalanceSum ?? BigInt(0)) + BigInt(payload.mintedPoolBalance.__value);
+    state.totalAnchorProvidedSum = (state.totalAnchorProvidedSum ?? BigInt(0)) + BigInt(payload.totalAnchorProvided.__value);
+    state.totalMintedProvidedSum = (state.totalMintedProvidedSum ?? BigInt(0)) + BigInt(payload.totalMintedProvided.__value);
+    state.metricsCount = (state.metricsCount ?? BigInt(0)) + BigInt(1);
+
+    recordSaves.push(state.save());
+  }
+  
+  async function getPsmMetricDaily(path: string, dateKey: number): Promise<PsmMetricDaily> {
+    const id = path + ':' + dateKey.toString();
+    let state = await PsmMetricDaily.get(id);
+    if (!state) {
+      state = new PsmMetricDaily(
+        id,
+        path,
+        dateKey,
+        BigInt(data.blockHeight),
+        new Date(block.block.header.time as any),
+      );
+    }
+    return state;
+  }
+
+  
   async function savePsmGovernance(payload: any) {
     const psmGovernance = new PsmGovernance(
       path,
@@ -97,13 +158,12 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
       block.block.header.time as any,
       path.split('.')[3],
       path.split('.')[3],
-      BigInt(payload.mintLimit.__value),
-      BigInt(payload.giveMintedFee.value.denominator.__value),
-      BigInt(payload.giveMintedFee.value.numerator.__value),
-      BigInt(payload.wantedMintedFee.value.denominator.__value),
-      BigInt(payload.wantedMintedFee.value.numerator.__value)
+      BigInt(payload.current.MintLimit.value.__value),
+      BigInt(payload.current.GiveMintedFee?.value?.denominator?.__value ?? 0),
+      BigInt(payload.current.GiveMintedFee?.value?.numerator?.__value ?? 0),
+      BigInt(payload.current.WantMintedFee?.value?.denominator?.__value ?? 0),
+      BigInt(payload.current.WantMintedFee?.value?.numerator?.__value ?? 0)
     );
-    // logger.info("savePsmGovernance: " + JSON.stringify(psmGovernance));
     recordSaves.push(psmGovernance.save());
   }
 
@@ -112,6 +172,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
       path,
       BigInt(data.blockHeight),
       block.block.header.time as any,
+
       BigInt(payload.current.DebtLimit.value.__value),
       BigInt(payload.current.InterestRate.value?.denominator.__value ?? 0),
       BigInt(payload.current.InterestRate.value?.numerator.__value ?? 0),
@@ -124,7 +185,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
       BigInt(payload.current.MintFee.value?.denominator.__value ?? 0),
       BigInt(payload.current.MintFee.value?.numerator.__value ?? 0)
     );
-    // logger.info("vaultManagerGovernance: " + JSON.stringify(vaultManagerGovernance));
+    
     recordSaves.push(vaultManagerGovernance.save());
   }
 
@@ -137,12 +198,15 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
       BigInt(payload.totalFeeBurned.__value),
       BigInt(payload.totalFeeMinted.__value)
     );
-    // logger.info("reserveMetric: " + JSON.stringify(reserveMetric));
+
     recordSaves.push(reserveMetric.save());
 
     for (const key in payload.allocations) {
       if (payload.allocations.hasOwnProperty(key)) {
         const allocation = payload.allocations[key];
+        // Save daily metrics
+        saveReserveAllocationMetricDaily(payload, allocation, key);
+
         const reserveAllocationMetric = new ReserveAllocationMetrics(
           `${path}:${key}`,
           BigInt(data.blockHeight),
@@ -152,10 +216,38 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
           BigInt(allocation.__value),
           reserveMetric.id
         );
-        // logger.info("reserveAllocationMetric: " + JSON.stringify(reserveAllocationMetric));
+
         recordSaves.push(reserveAllocationMetric.save());
       }
     }
+  }
+
+  async function saveReserveAllocationMetricDaily(payload: any, allocation: any, key: string) {
+    const dateKey = dateToDayKey(block.block.header.time);
+  
+    let state = await getReserveAllocationMetricDaily(path, dateKey);
+  
+    state.token = allocation.__brand;
+    state.key = key;
+    state.valueLast = BigInt(allocation.__value);
+    state.valueSum = (state.valueSum ?? BigInt(0)) + BigInt(allocation.__value);
+    state.metricsCount = (state.metricsCount ?? BigInt(0)) + BigInt(1);
+    recordSaves.push(state.save());
+  }
+  
+  async function getReserveAllocationMetricDaily(path: string, dateKey: number): Promise<ReserveAllocationMetricsDaily> {
+    const id = path + ':' + dateKey.toString();
+    let state = await ReserveAllocationMetricsDaily.get(id);
+    if (!state) {
+      state = new ReserveAllocationMetricsDaily(
+        id,
+        path,
+        dateKey,
+        BigInt(data.blockHeight),
+        new Date(block.block.header.time as any),
+      );
+    }
+    return state;
   }
 
   async function saveWallets(payload: any) {
@@ -226,6 +318,10 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     const typeOutName = matchTypeOutName ? matchTypeOutName[1] : undefined;
 
     if (typeInName !== undefined && typeOutName !== undefined) {
+      // First save daily Oracle Prices
+      saveOraclePriceDaily(payload, typeInName, typeOutName);
+      
+      // Save the Oracle Price
       const oraclePrice = new OraclePrice(
         path,
         BigInt(data.blockHeight),
@@ -236,12 +332,48 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
         typeInName,
         typeOutName
       );
-      // logger.info("oraclePrice: " + JSON.stringify(oraclePrice));
       recordSaves.push(oraclePrice.save());
     }
   }
 
+  async function saveOraclePriceDaily(payload: any, typeInName: string, typeOutName: string) {
+    const dateKey = dateToDayKey(block.block.header.time);
+  
+    let state = await getOraclePriceDaily(path, dateKey);
+  
+    state.priceFeedName = path.split('published.priceFeed.')[1];
+
+    state.typeInAmountLast = BigInt(BigInt(payload.amountIn.__value),);
+    state.typeInAmountSum = (state.typeInAmountSum ?? BigInt(0)) + BigInt(payload.amountIn.__value);
+
+    state.typeOutAmountLast = BigInt(BigInt(payload.amountOut.__value),);
+    state.typeOutAmountSum = (state.typeOutAmountSum ?? BigInt(0)) + BigInt(payload.amountOut.__value);
+
+    state.typeInName = typeInName;
+    state.typeOutName = typeOutName;
+
+    state.metricsCount = (state.metricsCount ?? BigInt(0)) + BigInt(1);
+    recordSaves.push(state.save());
+  }
+  
+  async function getOraclePriceDaily(path: string, dateKey: number): Promise<OraclePriceDaily> {
+    const id = path + ':' + dateKey.toString();
+    let state = await OraclePriceDaily.get(id);
+    if (!state) {
+      state = new OraclePriceDaily(
+        id,
+        path,
+        dateKey,
+        BigInt(data.blockHeight),
+        new Date(block.block.header.time as any),
+      );
+    }
+    return state;
+  }
+
   async function saveVaultManagerMetrics(payload: any) {
+    saveVaultManagerMetricsDaily(payload);
+
     const vaultManagerMetric = new VaultManagerMetrics(
       path,
       BigInt(data.blockHeight),
@@ -264,9 +396,65 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
       BigInt(payload.totalProceedsReceived.__value),
       BigInt(payload.totalShortfallReceived.__value)
     );
-    // logger.info("vaultManagerMetric: " + JSON.stringify(vaultManagerMetric));
     recordSaves.push(vaultManagerMetric.save());
   }
+
+  async function saveVaultManagerMetricsDaily(payload: any) {
+    const dateKey = dateToDayKey(block.block.header.time);
+
+    const state = await getVaultManagerMetricsDaily(path, dateKey);
+
+    state.liquidatingCollateralBrand = extractBrand(payload.liquidatingCollateral.__brand);
+    state.liquidatingDebtBrand = extractBrand(payload.liquidatingDebt.__brand);
+
+    state.liquidatingCollateralValueLast = BigInt(payload.liquidatingCollateral.__value);
+    state.liquidatingDebtValueLast = BigInt(payload.liquidatingDebt.__value);
+    state.lockedQuoteDenominatorLast = BigInt(payload.lockedQuote?.denominator.__value ?? 0);
+    state.lockedQuoteNumeratorLast = BigInt(payload.lockedQuote?.numerator.__value ?? 0);
+    state.numActiveVaultsLast = BigInt(payload.numActiveVaults);
+    state.numLiquidatingVaultsLast = BigInt(payload.numLiquidatingVaults);
+    state.numLiquidationsAbortedLast = BigInt(payload.numLiquidationsAborted);
+    state.numLiquidationsCompletedLast = BigInt(payload.numLiquidationsCompleted);
+    state.retainedCollateralLast = BigInt(payload.retainedCollateral.__value);
+    state.totalCollateralLast = BigInt(payload.totalCollateral.__value);
+    state.totalCollateralSoldLast = BigInt(payload.totalCollateralSold.__value);
+    state.totalDebtLast = BigInt(payload.totalDebt.__value);
+    state.totalOverageReceivedLast = BigInt(payload.totalOverageReceived.__value);
+    state.totalProceedsReceivedLast = BigInt(payload.totalProceedsReceived.__value);
+    state.totalShortfallReceivedLast = BigInt(payload.totalShortfallReceived.__value);
+  
+    state.liquidatingCollateralValueSum = (state.liquidatingCollateralValueSum ?? BigInt(0)) + BigInt(payload.liquidatingCollateral.__value);
+    state.liquidatingDebtValueSum = (state.liquidatingDebtValueSum ?? BigInt(0)) + BigInt(payload.liquidatingDebt.__value);
+    state.lockedQuoteDenominatorSum = (state.lockedQuoteDenominatorSum ?? BigInt(0)) + BigInt(payload.lockedQuote?.denominator.__value ?? 0);
+    state.lockedQuoteNumeratorSum = (state.lockedQuoteNumeratorSum ?? BigInt(0)) + BigInt(payload.lockedQuote?.numerator.__value ?? 0);
+    state.numActiveVaultsSum = (state.numActiveVaultsSum ?? BigInt(0)) + BigInt(payload.numActiveVaults);
+    state.numLiquidatingVaultsSum = (state.numLiquidatingVaultsSum ?? BigInt(0)) + BigInt(payload.numLiquidatingVaults);
+    state.numLiquidationsAbortedSum = (state.numLiquidationsAbortedSum ?? BigInt(0)) + BigInt(payload.numLiquidationsAborted);
+    state.numLiquidationsCompletedSum = (state.numLiquidationsCompletedSum ?? BigInt(0)) + BigInt(payload.numLiquidationsCompleted);
+    state.retainedCollateralSum = (state.retainedCollateralSum ?? BigInt(0)) + BigInt(payload.retainedCollateral.__value);
+    state.totalCollateralSum = (state.totalCollateralSum ?? BigInt(0)) + BigInt(payload.totalCollateral.__value);
+    state.totalCollateralSoldSum = (state.totalCollateralSoldSum ?? BigInt(0)) + BigInt(payload.totalCollateralSold.__value);
+    state.totalDebtSum = (state.totalDebtSum ?? BigInt(0)) + BigInt(payload.totalDebt.__value);
+    state.totalOverageReceivedSum = (state.totalOverageReceivedSum ?? BigInt(0)) + BigInt(payload.totalOverageReceived.__value);
+    state.totalProceedsReceivedSum = (state.totalProceedsReceivedSum ?? BigInt(0)) + BigInt(payload.totalProceedsReceived.__value);
+    state.totalShortfallReceivedSum = (state.totalShortfallReceivedSum ?? BigInt(0)) + BigInt(payload.totalShortfallReceived.__value);
+
+    state.metricsCount = (state.metricsCount ?? BigInt(0)) + BigInt(1);
+    recordSaves.push(state.save());
+  }
+
+  async function getVaultManagerMetricsDaily(path: string, dateKey: number): Promise<VaultManagerMetricsDaily>{
+    const id = `${path}:${dateKey}`;
+    let state = await VaultManagerMetricsDaily.get(id);
+    if (!state) {
+      state = new VaultManagerMetricsDaily(
+        id, path, dateKey, BigInt(data.blockHeight), block.block.header.time as any,
+      );
+      return state;
+    }
+    return state;
+  }
+
 
   const regexFunctionMap = [
     { regex: /^published\.priceFeed\..+price_feed$/, function: savePriceFeed },
@@ -275,29 +463,34 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     { regex: /^published\.vaultFactory\.managers\.manager[0-9]+\.metrics$/, function: saveVaultManagerMetrics },
     { regex: /^published\.vaultFactory\.managers\.manager[0-9]+\.governance$/, function: saveVaultManagerGovernance },
     { regex: /^published\.reserve\.metrics$/, function: saveReserveMetrics },
-    { regex: /^published\.wallet\..+\.current$/, function: saveWallets},
+    { regex: /^published\.wallet\..+\.current$/, function: saveWallets },
     { regex: /^published\.vaultFactory\.managers\.manager[0-9]+\.vaults\.vault[0-9]+$/, function: saveVaults },
     { regex: /^published\.boardAux\.board[0-9]+$/, function: saveBoardAux }
   ];
-  
+
   for (let idx = 0; idx < data.values.length; idx++) {
     const rawValue: string = data.values[idx];
     if (!rawValue) {
-      return undefined;
+      continue;
     }
 
     const value = JSON.parse(rawValue);
     const payload = JSON.parse(value.body.replace(/^#/, ''));
 
     resolveBrandNamesAndValues(payload);
-
-    for (const { regex, function: action } of regexFunctionMap) {
-      if (path.match(regex)) {
-        await action(payload);
-        break;
+    try {
+      for (const { regex, function: action } of regexFunctionMap) {
+        if (path.match(regex)) {
+          await action(payload);
+          break;
+        }
       }
+      saveStateEvent(idx, value, payload);
+    } catch (e) {
+      logger.error(`Error for path: ${path}`);
+      logger.error(e);
+      throw e;
     }
-    saveStateEvent(idx, value, payload);
   }
 
   await Promise.all(recordSaves);
