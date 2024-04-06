@@ -1,16 +1,11 @@
-import {
-  CosmosDatasourceKind,
-  CosmosHandlerKind,
-  CosmosProject,
-} from "@subql/types-cosmos";
+import { CosmosDatasourceKind, CosmosHandlerKind, CosmosProject } from "@subql/types-cosmos";
 
 // Can expand the Datasource processor types via the genreic param
 const project: CosmosProject = {
   specVersion: "1.0.0",
   version: "0.0.1",
   name: "agoric-starter",
-  description:
-    "This project can be use as a starting point for developing your Cosmos agoric based SubQuery project",
+  description: "This project can be use as a starting point for developing your Cosmos agoric based SubQuery project",
   runner: {
     node: {
       name: "@subql/node-cosmos",
@@ -61,7 +56,10 @@ const project: CosmosProject = {
       // startBlock: 2115669,
       // startBlock: 14347000,
       // startBlock: 12306806,
-      startBlock: 13017175,
+      // startBlock: 13017175,
+      // startBlock: 2115669,
+      // Upgrade 8 (launch of Inter Protocol)
+      startBlock: 7179262,
 
       mapping: {
         file: "./dist/index.js",
@@ -83,12 +81,12 @@ const project: CosmosProject = {
           //   },
           // },
           {
-            handler: 'handleStateChangeEvent',
+            handler: "handleStateChangeEvent",
             kind: CosmosHandlerKind.Event,
             filter: {
-              type: 'state_change',
+              type: "state_change",
             },
-          }
+          },
         ],
       },
     },

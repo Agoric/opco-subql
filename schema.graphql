@@ -130,7 +130,7 @@ type Wallet @entity {
   blockHeight: BigInt!
   blockTime: Date!
   address: String! @index
-  vault: [Vault] @derivedFrom(field:"wallet")
+  vault: [Vault] @derivedFrom(field: "wallet")
 }
 
 type Vault @entity {
@@ -211,7 +211,6 @@ type VaultManagerMetricsDaily @entity {
   metricsCount: BigInt
 }
 
-
 type VaultManagerGovernance @entity {
   id: ID!
   blockHeight: BigInt!
@@ -259,5 +258,5 @@ type ReserveMetrics @entity {
   shortfallBalance: BigInt!
   totalFeeBurned: BigInt!
   totalFeeMinted: BigInt!
-  allocations: [ReserveAllocationMetrics] @derivedFrom(field:"reserveMetrics")
+  allocations: [ReserveAllocationMetrics] @derivedFrom(field: "reserveMetrics")
 }

@@ -90,19 +90,19 @@ The fastest way to get support is by [searching our documentation](https://acade
 
 ### CosmosHandlerKind.Event Filter Types
 
-* active_proposal
-* burn
-* coin_received
-* coin_spent
-* coinbase
-* commission
-* message
-* mint
-* proposal_deposit
-* proposal_vote
-* proposer_reward
-* rewards
-* state_change
-* storage
-* submit_proposal
-* transfer
+- active_proposal
+- burn
+- coin_received
+- coin_spent
+- coinbase
+- commission
+- message
+- mint
+- proposal_deposit
+- proposal_vote
+- proposer_reward
+- rewards
+- state_change
+- storage
+- submit_proposal
+- transfer
