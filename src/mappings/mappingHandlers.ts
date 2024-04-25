@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import {
   Message,
   TransferEvent,
@@ -28,6 +27,7 @@ import {
   extractBrand,
   resolveBrandNamesAndValues,
   dateToDayKey,
+  fetch,
 } from "./utils";
 
 import { EVENT_TYPES, STORE_KEY, VSTORAGE_VALUE, KEY_KEY, VALUE_KEY } from "./constants";
@@ -45,15 +45,13 @@ BigInt.prototype.toJSON = function () {
 const API_ENDPOINT = 'https://main-a.api.agoric.net:443'
 
 export async function handleBlock(block: CosmosBlock): Promise<void> {
-  const moduleAccountsResponse = await fetch(`${API_ENDPOINT}/cosmos/auth/v1beta1/module_accounts`);
-  const moduleAccounts = await moduleAccountsResponse.json();
+  const moduleAccounts = await fetch(`${API_ENDPOINT}/cosmos/auth/v1beta1/module_accounts`);
 
   const reserveAccount = moduleAccounts.accounts.find((account: any) => account.name === 'vbank/reserve');
   const reserveAccountAddress = reserveAccount.base_account.address;
 
-  const reserveAccountBalancesResponse = await fetch(`${API_ENDPOINT}/cosmos/bank/v1beta1/balances/${reserveAccountAddress}`);
+  const reserveAccountBalances = await fetch(`${API_ENDPOINT}/cosmos/bank/v1beta1/balances/${reserveAccountAddress}`);
 
-  const reserveAccountBalances = await reserveAccountBalancesResponse.json();
   const istBalance = reserveAccountBalances.balances.find((balance: any) => balance.denom === "uist")
 
   const record = new ReserveBalance(block.block.id, BigInt(block.header.height), reserveAccountAddress, BigInt(istBalance.amount), 'uist');

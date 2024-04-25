@@ -1,3 +1,5 @@
+import crossFetch from 'cross-fetch';
+
 export function extractBrand(str: string): string {
   return str.replace("Alleged: ", "").replace(" brand", "");
 }
@@ -94,4 +96,16 @@ export function dateToDayKey(timestamp: any): number {
   const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
   const day = date.getUTCDate().toString().padStart(2, "0");
   return parseInt(`${year}${month}${day}`);
+}
+
+export const fetch = async (url: string) => {
+  const response = await crossFetch(url);
+
+  if (response.status >= 400) {
+    const errorText = await response.text();
+    throw new Error(`Status: ${response.status} -- ${errorText}`);
+  }
+
+  const responseJson = await response.json();
+  return responseJson;
 }
