@@ -1,3 +1,4 @@
+import fetch from 'cross-fetch';
 import {
   Message,
   TransferEvent,
@@ -16,8 +17,9 @@ import {
   VaultManagerMetricsDaily,
   PsmMetricDaily,
   ReserveAllocationMetricsDaily,
+  ReserveBalance,
 } from "../types";
-import { CosmosEvent } from "@subql/types-cosmos";
+import { CosmosEvent, CosmosBlock } from "@subql/types-cosmos";
 import {
   b64encode,
   b64decode,
@@ -39,6 +41,24 @@ import { reservesEventKit } from "./events/reserves";
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
+
+const API_ENDPOINT = 'https://main-a.api.agoric.net:443'
+
+export async function handleBlock(block: CosmosBlock): Promise<void> {
+  const moduleAccountsResponse = await fetch(`${API_ENDPOINT}/cosmos/auth/v1beta1/module_accounts`);
+  const moduleAccounts = await moduleAccountsResponse.json();
+
+  const reserveAccount = moduleAccounts.accounts.find((account: any) => account.name === 'vbank/reserve');
+  const reserveAccountAddress = reserveAccount.base_account.address;
+
+  const reserveAccountBalancesResponse = await fetch(`${API_ENDPOINT}/cosmos/bank/v1beta1/balances/${reserveAccountAddress}`);
+
+  const reserveAccountBalances = await reserveAccountBalancesResponse.json();
+  const istBalance = reserveAccountBalances.balances.find((balance: any) => balance.denom === "uist")
+
+  const record = new ReserveBalance(block.block.id, BigInt(block.header.height), reserveAccountAddress, BigInt(istBalance.amount), 'uist');
+  await record.save();
+}
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block } = cosmosEvent;

@@ -64,12 +64,12 @@ const project: CosmosProject = {
       mapping: {
         file: "./dist/index.js",
         handlers: [
-          // {
-          //     Using block handlers slows your project down as they can be executed with each and every block.
-          //     Only use if you need to
-          //     handler: 'handleEvent',
-          //     kind: CosmosHandlerKind.Block,
-          // },
+          {
+            // Using block handlers slows your project down as they can be executed with each and every block.
+            // Only use if you need to
+            handler: 'handleBlock',
+            kind: CosmosHandlerKind.Block,
+          },
           // {
           //   handler: "handleEvent",
           //   kind: CosmosHandlerKind.Event,

@@ -260,3 +260,11 @@ type ReserveMetrics @entity {
   totalFeeMinted: BigInt!
   allocations: [ReserveAllocationMetrics] @derivedFrom(field: "reserveMetrics")
 }
+
+type ReserveBalance @entity {
+  id: ID!
+  blockHeight: BigInt!
+  address: String!
+  balance: BigInt!
+  denomination: String!
+}
