@@ -143,6 +143,8 @@ type Vault @entity {
   debt: BigInt
   state: String
   wallet: Wallet!
+  liquidatingAt: Date
+  liquidatedAt: Date  
 }
 
 type VaultManagerMetrics @entity {
