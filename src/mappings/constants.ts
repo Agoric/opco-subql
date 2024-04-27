@@ -19,6 +19,11 @@ export const EVENT_TYPES = {
   TRANSFER: "transfer",
 };
 
+export const VAULT_STATES = {
+  LIQUIDATING: "liquidating",
+  LIQUIDATED: "liquidated"
+}
+
 export const VALUE_KEY = b64encode("value");
 export const STORE_KEY = b64encode("store");
 export const VSTORAGE_VALUE = b64encode("vstorage");

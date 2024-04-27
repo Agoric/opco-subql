@@ -1,4 +1,5 @@
 import { VaultManagerMetrics, VaultManagerMetricsDaily, VaultManagerGovernance, Wallet, Vault } from "../../types";
+import { VAULT_STATES } from "../constants";
 import { dateToDayKey, extractBrand } from "../utils";
 
 export const vaultsEventKit = (block: any, data: any, module: string, path: string) => {
@@ -55,6 +56,14 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     vault.debt = payload?.debtSnapshot?.debt?.__value;
     vault.balance = payload?.locked?.__value;
     vault.state = payload?.vaultState;
+
+    if (vault.state === VAULT_STATES.LIQUIDATING && !vault.liquidatingAt) {
+      vault.liquidatingAt = block.block.header.time;
+    }
+
+    if (vault.state === VAULT_STATES.LIQUIDATED && !vault.liquidatedAt) {
+      vault.liquidatedAt = block.block.header.time;
+    }
     return [vault.save()];
   }
 
