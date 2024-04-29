@@ -28,7 +28,16 @@ import {
   dateToDayKey,
 } from "./utils";
 
-import { EVENT_TYPES, STORE_KEY, VSTORAGE_VALUE, KEY_KEY, VALUE_KEY } from "./constants";
+import {
+  EVENT_TYPES,
+  STORE_KEY,
+  VSTORAGE_VALUE,
+  KEY_KEY,
+  VALUE_KEY,
+  STORE_NAME_KEY,
+  SUBKEY_KEY,
+  UNPROVED_VALUE_KEY,
+} from "./constants";
 import { psmEventKit } from "./events/psm";
 import { boardAuxEventKit } from "./events/boardAux";
 import { priceFeedEventKit } from "./events/priceFeed";
@@ -48,18 +57,18 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     return;
   }
 
-  const storeAttr = event.attributes.find((a) => a.key === STORE_KEY);
+  const storeAttr = event.attributes.find((a) => a.key === STORE_KEY || a.key === STORE_NAME_KEY);
   if (!storeAttr || storeAttr.value != VSTORAGE_VALUE) {
     return;
   }
 
-  const valueAttr = event.attributes.find((a: any) => a.key === VALUE_KEY);
+  const valueAttr = event.attributes.find((a: any) => a.key === VALUE_KEY || a.key === UNPROVED_VALUE_KEY);
   if (!valueAttr || !valueAttr.value) {
     logger.warn("Value attribute is missing or empty.");
     return;
   }
 
-  const keyAttr = event.attributes.find((a: any) => a.key === KEY_KEY);
+  const keyAttr = event.attributes.find((a: any) => a.key === KEY_KEY || a.key === SUBKEY_KEY);
   if (!keyAttr) {
     logger.warn("Key attribute is missing or empty.");
     return;
@@ -67,7 +76,9 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   let data = Object();
   try {
-    data = JSON.parse(b64decode(valueAttr.value));
+    const decodedValue =
+      valueAttr.key === UNPROVED_VALUE_KEY ? b64decode(b64decode(valueAttr.value)) : b64decode(valueAttr.value);
+    data = JSON.parse(decodedValue);
   } catch (e) {
     return;
   }
@@ -77,7 +88,11 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     return;
   }
 
-  const path = extractStoragePath(b64decode(keyAttr.value));
+  const decodedKey =
+    keyAttr.key === SUBKEY_KEY
+      ? b64decode(b64decode(keyAttr.value)).replaceAll("\u0000", "\x00")
+      : b64decode(keyAttr.value);
+  const path = extractStoragePath(decodedKey);
   const module = getStateChangeModule(path);
 
   const recordSaves: (Promise<void> | undefined)[] = [];
@@ -91,7 +106,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
       path,
       idx,
       JSON.stringify(value.slots),
-      JSON.stringify(payload)
+      JSON.stringify(payload),
     );
 
     recordSaves.push(record.save());

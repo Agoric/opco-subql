@@ -23,3 +23,6 @@ export const VALUE_KEY = b64encode("value");
 export const STORE_KEY = b64encode("store");
 export const VSTORAGE_VALUE = b64encode("vstorage");
 export const KEY_KEY = b64encode("key");
+export const STORE_NAME_KEY = b64encode("store_name");
+export const SUBKEY_KEY = b64encode("store_subkey");
+export const UNPROVED_VALUE_KEY = b64encode("unproved_value");
