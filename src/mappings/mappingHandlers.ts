@@ -62,13 +62,13 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     return;
   }
 
-  const valueAttr = event.attributes.find((a: any) => a.key === VALUE_KEY || a.key === UNPROVED_VALUE_KEY);
+  const valueAttr = event.attributes.find((a) => a.key === VALUE_KEY || a.key === UNPROVED_VALUE_KEY);
   if (!valueAttr || !valueAttr.value) {
     logger.warn("Value attribute is missing or empty.");
     return;
   }
 
-  const keyAttr = event.attributes.find((a: any) => a.key === KEY_KEY || a.key === SUBKEY_KEY);
+  const keyAttr = event.attributes.find((a) => a.key === KEY_KEY || a.key === SUBKEY_KEY);
   if (!keyAttr) {
     logger.warn("Key attribute is missing or empty.");
     return;
