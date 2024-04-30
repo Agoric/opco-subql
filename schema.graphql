@@ -268,3 +268,10 @@ type IBCTransfer @entity {
   amount: String!
   transferType: TransferType!
 }
+
+type Balances @entity {
+  id: ID!
+  address: String @index
+  balance: BigInt
+  denom: String  @index
+}

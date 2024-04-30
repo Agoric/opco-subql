@@ -107,6 +107,13 @@ const project: CosmosProject = {
               type: "state_change",
             },
           },
+          {
+            handler: "handleTransferEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "transfer",
+            },
+          },
         ],
       },
     },

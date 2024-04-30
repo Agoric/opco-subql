@@ -28,6 +28,12 @@ export const VAULT_STATES = {
   LIQUIDATED: "liquidated",
 };
 
+export const TRANSACTION_FIELDS = {
+  RECIPIENT: 'recipient',
+  SENDER: 'sender',
+  AMOUNT: 'amount'
+}
+
 export const VALUE_KEY = b64encode("value");
 export const STORE_KEY = b64encode("store");
 export const VSTORAGE_VALUE = b64encode("vstorage");

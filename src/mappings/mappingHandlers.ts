@@ -28,12 +28,14 @@ import {
   PACKET_DST_PORT_KEY,
   PACKET_SRC_PORT_KEY,
   TRANSFER_PORT_VALUE,
+  TRANSACTION_FIELDS
 } from "./constants";
 import { psmEventKit } from "./events/psm";
 import { boardAuxEventKit } from "./events/boardAux";
 import { priceFeedEventKit } from "./events/priceFeed";
 import { vaultsEventKit } from "./events/vaults";
 import { reservesEventKit } from "./events/reserves";
+import { DecodedEvent, balancesEventKit } from "./events/balances";
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -245,4 +247,65 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
   }
 
   await Promise.allSettled(recordSaves);
+}
+
+export async function handleTransferEvent(
+  cosmosEvent: CosmosEvent
+): Promise<void> {
+  const { event, block } = cosmosEvent;
+
+  if (event.type != EVENT_TYPES.TRANSFER) {
+    logger.warn('Not valid transfer event.');
+    return;
+  }
+
+  const balancesKit = balancesEventKit();
+  const decodedData: DecodedEvent = balancesKit.decodeEvent(cosmosEvent);
+
+  const recipientAddress = balancesKit.getAttributeValue(
+    decodedData,
+    TRANSACTION_FIELDS.RECIPIENT
+  );
+  const senderAddress = balancesKit.getAttributeValue(
+    decodedData,
+    TRANSACTION_FIELDS.SENDER
+  );
+  const transactionAmount = balancesKit.getAttributeValue(
+    decodedData,
+    TRANSACTION_FIELDS.AMOUNT
+  );
+
+  if (!recipientAddress) {
+    logger.error('Recipient address is missing or invalid.');
+    return;
+  }
+
+  if (!senderAddress) {
+    logger.error('Sender address is missing or invalid.');
+    return;
+  }
+
+  if (!transactionAmount) {
+    logger.error('Transaction amount is missing or invalid.');
+    return;
+  }
+
+  const [recipientEntryExists, senderEntryExists] = await Promise.all([
+    balancesKit.addressExists(recipientAddress),
+    balancesKit.addressExists(senderAddress),
+  ]);
+
+  if (!recipientEntryExists) {
+    await balancesKit.createBalancesEntry(recipientAddress);
+  }
+
+  if (!senderEntryExists) {
+    await balancesKit.createBalancesEntry(senderAddress);
+  }
+
+  balancesKit.updateBalances(
+    senderAddress,
+    recipientAddress,
+    BigInt(transactionAmount.slice(0, -4))
+  );
 }
