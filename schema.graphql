@@ -241,3 +241,14 @@ type ReserveMetrics @entity {
   totalFeeMinted: BigInt!
   allocations: [ReserveAllocationMetrics] @derivedFrom(field: "reserveMetrics")
 }
+
+type IBCChannel @entity {
+  id: ID!
+  blockTime: Date!
+  blockHeight: BigInt!
+  channelName: String!
+  srcAddress: String!
+  destAddress: String!
+  denomination: String!
+  amount: String!
+}

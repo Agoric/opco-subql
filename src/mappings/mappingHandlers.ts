@@ -1,5 +1,6 @@
 import {
   StateChangeEvent,
+  IBCChannel,
 } from "../types";
 import { CosmosEvent } from "@subql/types-cosmos";
 import {
@@ -18,6 +19,8 @@ import {
   STORE_NAME_KEY,
   SUBKEY_KEY,
   UNPROVED_VALUE_KEY,
+  PACKET_DATA_KEY,
+  PACKET_SRC_CHANNEL_KEY,
 } from "./constants";
 import { psmEventKit } from "./events/psm";
 import { boardAuxEventKit } from "./events/boardAux";
@@ -29,6 +32,40 @@ import { reservesEventKit } from "./events/reserves";
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
+
+export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promise<void> {
+  const { event, block } = cosmosEvent;
+  if (event.type != EVENT_TYPES.SEND_PACKET) {
+    logger.warn("Not valid send_packet event.");
+    return;
+  }
+
+  const packetDataAttr = event.attributes.find((a) => a.key === PACKET_DATA_KEY);
+  if (!packetDataAttr) {
+    logger.warn("No packet data attribute found");
+    return;
+  }
+
+  const packetSrcChannelAttr = event.attributes.find((a) => a.key === PACKET_SRC_CHANNEL_KEY);
+  if (!packetSrcChannelAttr) {
+    logger.warn("No packet source channel found");
+    return;
+  }
+
+  const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
+
+  const record = new IBCChannel(
+    packetSrcChannelAttr.value,
+    block.header.time as any,
+    BigInt(block.header.height),
+    packetSrcChannelAttr.value,
+    sender,
+    receiver,
+    denom,
+    amount,
+  );
+  record.save();
+}
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block } = cosmosEvent;
