@@ -81,6 +81,16 @@ const project: CosmosProject = {
           //   },
           // },
           {
+            handler: "handleIbcSendPacketEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "send_packet",
+              messageFilter: {
+                type: "/ibc.applications.transfer.v1.MsgTransfer",
+              },
+            },
+          },
+          {
             handler: "handleStateChangeEvent",
             kind: CosmosHandlerKind.Event,
             filter: {
