@@ -266,10 +266,6 @@ type ReserveMetrics @entity {
   allocations: [ReserveAllocationMetrics] @derivedFrom(field: "reserveMetrics")
 }
 
-type Account @entity {
-  id: ID!
-}
-
 type IBCChannel @entity {
   id: ID!
   channelName: String!
@@ -293,6 +289,7 @@ type IBCTransfer @entity {
   transferType: TransferType!
 }
 
+<<<<<<< HEAD
 type VaultStatesDaily @entity {
   id: ID!
   blockHeightLast: BigInt!
@@ -302,4 +299,17 @@ type VaultStatesDaily @entity {
   liquidating: BigInt!
   liquidated: BigInt!
   liquidatedClosed: BigInt!
+=======
+type Balance @entity {
+  id: ID!
+  address: String @index
+  balance: BigInt
+  denom: String  @index
+  account: Account!
+}
+
+type Account @entity {
+  id: ID!
+  balances: [Balance] @derivedFrom(field: "account")
+>>>>>>> 31796b18 (feat: index transfer events)
 }

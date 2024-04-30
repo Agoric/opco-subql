@@ -1,0 +1,130 @@
+{
+  "balances": [
+    {
+      "address": "agoric1qc3r5tlh9ldvcg54lj8ukrwhytpffkmjxav87c",
+      "coins": [
+        {
+          "denom": "ubld",
+          "amount": "1000000"
+        }
+      ]
+    },
+    {
+      "address": "agoric18du3gnu9qqgrcfln804g8gcmruv2gjwgs7mj3l",
+      "coins": [
+        {
+          "denom": "ubld",
+          "amount": "497000000"
+        }
+      ]
+    },
+    {
+      "address": "agoric18c72hdqrcc4hkpewvpf7grrx8rawk0045g3tm0",
+      "coins": [
+        {
+          "amount": "200000000000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric18m9lqhqas8qrwafj92kta0ek2q96kwvyt84793",
+      "coins": [
+        {
+          "amount": "49999400000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric1grgelyng2v6v3t8z87wu3sxgt9m5s03x7dax7m",
+      "coins": [
+        {
+          "amount": "1000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric1gmru5vv2zrz9m0d3vwjz6fcchw9ddmq9w3s2qy",
+      "coins": [
+        {
+          "amount": "1000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric1fl48vsnmsdzcv85q5d2q4z5ajdha8yu38xtsfp",
+      "coins": [
+        {
+          "amount": "100000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric1w89nsqmcjfw9la2x8pk5k8pwwsgh8mhqs53tsr",
+      "coins": [
+        {
+          "amount": "300000000000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric10fz6uxxlg7pdkscgpzcny4z6lzhqcluyqhr8au",
+      "coins": [
+        {
+          "amount": "30000000000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric10mmdskqh6nv8tzd4lhzpevwlky35m43s45ssg5",
+      "coins": [
+        {
+          "amount": "125000000000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric1kxquj9rnprhyaq2laulgqznz7t6yqmw6wm5ucx",
+      "coins": [
+        {
+          "amount": "45000000000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric1euw2t0lxgeerlpj0tcy77f9syrmgx26ehdx3sq",
+      "coins": [
+        {
+          "amount": "100000000000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric1a0fktnlglcpj3pkzwftnr63uqr42mmcskuhakj",
+      "coins": [
+        {
+          "amount": "25000000000000",
+          "denom": "ubld"
+        }
+      ]
+    },
+    {
+      "address": "agoric179gfr279yh3zhdw7aw85t7kj4vcsazdckzd42e",
+      "coins": [
+        {
+          "amount": "125000000000000",
+          "denom": "ubld"
+        }
+      ]
+    }
+  ]
+}

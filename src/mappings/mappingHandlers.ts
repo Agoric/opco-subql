@@ -242,3 +242,93 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   await Promise.allSettled(recordSaves);
 }
+export async function handleBalanceEvent(
+  cosmosEvent: CosmosEvent
+): Promise<void> {
+  const { event } = cosmosEvent;
+
+  const incrementEventTypes = [
+    EVENT_TYPES.COMMISSION,
+    EVENT_TYPES.REWARDS,
+    EVENT_TYPES.PROPOSER_REWARD,
+    EVENT_TYPES.COIN_RECEIVED,
+    EVENT_TYPES.COINBASE,
+  ];
+
+  const decrementEventTypes = [EVENT_TYPES.COIN_SPENT, EVENT_TYPES.BURN];
+
+  let operation: Operation | null = null;
+
+  if (incrementEventTypes.includes(event.type)) {
+    operation = Operation.Increment;
+  } else if (decrementEventTypes.includes(event.type)) {
+    operation = Operation.Decrement;
+  } else {
+    logger.warn(`${event.type} is not a valid balance event.`);
+    return;
+  }
+
+  logger.info(`Event:${event.type}`);
+  logger.info(`Event Data:${JSON.stringify(cosmosEvent.event)}`);
+
+  const balancesKit = balancesEventKit();
+  const data = balancesKit.getData(cosmosEvent);
+  logger.info(`Decoded Data:${JSON.stringify(data)}`);
+
+  const address = balancesKit.getAttributeValue(
+    data,
+    BALANCE_FIELDS[event.type as keyof typeof BALANCE_FIELDS]
+  );
+
+  const transactionAmount = balancesKit.getAttributeValue(
+    data,
+    BALANCE_FIELDS.amount
+  );
+
+  if (!address) {
+    logger.error(`Address ${address} is missing or invalid.`);
+    return;
+  }
+
+  const { isValidTransaction, coins } =
+    balancesKit.validateTransaction(transactionAmount);
+
+  if (!transactionAmount || !isValidTransaction) {
+    logger.error(`Amount ${transactionAmount} invalid.`);
+    return;
+  }
+
+  for (let coin of coins) {
+    const { amount, denom } = coin;
+    const entryExists = await balancesKit.addressExists(address, denom);
+
+    if (!entryExists) {
+      const primaryKey = `${address}-${denom}`;
+      await balancesKit.createBalancesEntry(address, denom, primaryKey);
+    }
+
+    const formattedAmount = BigInt(Math.round(Number(amount)));
+    await balancesKit.updateBalance(address, denom, formattedAmount, operation);
+  }
+}
+
+export async function initiateBalancesTable(block: CosmosBlock): Promise<void> {
+  try {
+    const data = mainnetGenesisData;
+    for (let element of data.balances) {
+      let newBalance;
+      for (const coin of element.coins) {
+        newBalance = new Balance(`${element.address}-${coin.denom}`, element.address);
+        newBalance.address = element.address;
+        newBalance.balance = BigInt(coin.amount);
+        newBalance.denom = coin.denom;
+
+        await newBalance.save();
+      }
+    }
+
+    logger.info(`Balances Table Initiated`);
+  } catch (error) {
+    logger.error(`Error initiating balances table: ${error}`);
+  }
+}

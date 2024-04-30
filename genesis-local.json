@@ -1,0 +1,13 @@
+{
+  "balances": [
+    {
+      "address": "agoric1estsewt6jqsx77pwcxkn5ah0jqgu8rhgflwfdl",
+      "coins": [
+        {
+          "denom": "ubld",
+          "amount": "999999995000000000"
+        }
+      ]
+    }
+  ]
+}

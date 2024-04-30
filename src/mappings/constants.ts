@@ -31,23 +31,41 @@ export const VAULT_STATES = {
   LIQUIDATED_CLOSED: 'liquidatedClosed',
 };
 
-export const VALUE_KEY = b64encode('value');
-export const STORE_KEY = b64encode('store');
-export const VSTORAGE_VALUE = b64encode('vstorage');
-export const KEY_KEY = b64encode('key');
-export const STORE_NAME_KEY = b64encode('store_name');
-export const SUBKEY_KEY = b64encode('store_subkey');
-export const UNPROVED_VALUE_KEY = b64encode('unproved_value');
-export const PACKET_DATA_KEY = 'packet_data';
-export const PACKET_SRC_CHANNEL_KEY = 'packet_src_channel';
-export const PACKET_DST_CHANNEL_KEY = 'packet_dst_channel';
-export const PACKET_SRC_PORT_KEY = 'packet_src_port';
-export const PACKET_DST_PORT_KEY = 'packet_dst_port';
-export const ACTION_KEY = b64encode('action');
-export const IBC_MESSAGE_TRANSFER_VALUE = b64encode('/ibc.applications.transfer.v1.MsgTransfer');
-export const IBC_MESSAGE_RECEIVE_PACKET_VALUE = b64encode('/ibc.core.channel.v1.MsgRecvPacket');
-export const RECEPIENT_KEY = b64encode('recipient');
-export const SENDER_KEY = b64encode('sender');
-export const RECEIVER_KEY = b64encode('receiver');
-export const AMOUNT_KEY = b64encode('amount');
-export const TRANSFER_PORT_VALUE = 'transfer';
+export const BALANCE_FIELDS = {
+  amount: 'amount',
+  // Bank Events
+  coinbase: 'minter',
+  coin_received: 'receiver',
+  coin_spent: 'spender',
+  transfer_recipient: 'recipient',
+  transfer_sender: 'sender',
+  burn: "burner",
+  // Distribution Events
+  rewards: 'validator',
+  commission: 'validator',
+  proposer_reward: 'validator',
+  withdraw_rewards: 'validator',
+  withdraw_commission: 'validator',
+
+};
+
+export const VALUE_KEY = b64encode("value");
+export const STORE_KEY = b64encode("store");
+export const VSTORAGE_VALUE = b64encode("vstorage");
+export const KEY_KEY = b64encode("key");
+export const STORE_NAME_KEY = b64encode("store_name");
+export const SUBKEY_KEY = b64encode("store_subkey");
+export const UNPROVED_VALUE_KEY = b64encode("unproved_value");
+export const PACKET_DATA_KEY = "packet_data";
+export const PACKET_SRC_CHANNEL_KEY = "packet_src_channel";
+export const PACKET_DST_CHANNEL_KEY = "packet_dst_channel";
+export const PACKET_SRC_PORT_KEY = "packet_src_port";
+export const PACKET_DST_PORT_KEY = "packet_dst_port";
+export const ACTION_KEY = b64encode("action");
+export const IBC_MESSAGE_TRANSFER_VALUE = b64encode("/ibc.applications.transfer.v1.MsgTransfer");
+export const IBC_MESSAGE_RECEIVE_PACKET_VALUE = b64encode("/ibc.core.channel.v1.MsgRecvPacket");
+export const RECEPIENT_KEY = b64encode("recipient");
+export const SENDER_KEY = b64encode("sender");
+export const RECEIVER_KEY = b64encode("receiver");
+export const AMOUNT_KEY = b64encode("amount");
+export const TRANSFER_PORT_VALUE = "transfer";
