@@ -138,6 +138,7 @@ type Vault @entity {
   blockHeight: BigInt!
   blockTime: Date!
   balance: BigInt
+  lockedValue: BigInt
   coin: String @index
   token: String @index
   debt: BigInt
