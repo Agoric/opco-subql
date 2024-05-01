@@ -21,6 +21,12 @@ import {
   UNPROVED_VALUE_KEY,
   PACKET_DATA_KEY,
   PACKET_SRC_CHANNEL_KEY,
+  ACTION_KEY,
+  IBC_MESSAGE_TRANSFER_VALUE,
+  RECEPIENT_KEY,
+  RECEIVER_KEY,
+  SENDER_KEY,
+  AMOUNT_KEY,
 } from "./constants";
 import { psmEventKit } from "./events/psm";
 import { boardAuxEventKit } from "./events/boardAux";
@@ -51,16 +57,51 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
     logger.warn("No packet source channel found");
     return;
   }
-
   const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
 
+  const txns = block.txs;
+  const ibcTransaction = txns.find(
+    (txn) =>
+      txn.events.find(
+        (event) =>
+          event.type === EVENT_TYPES.MESSAGE &&
+          event.attributes.find(
+            (attribute) => attribute.key === ACTION_KEY && attribute.value === IBC_MESSAGE_TRANSFER_VALUE,
+          ),
+      ) &&
+      txn.events.find(
+        (event) =>
+          event.type === EVENT_TYPES.IBC_TRANSFER &&
+          event.attributes.find((attribute) => attribute.key === SENDER_KEY)?.value === b64encode(sender) &&
+          event.attributes.find((attribute) => attribute.key === RECEIVER_KEY)?.value === b64encode(receiver),
+      ),
+  );
+  const transferEvents = ibcTransaction?.events.filter((event) => event.type === EVENT_TYPES.TRANSFER);
+  const escrowTransaction = transferEvents
+    ?.reverse()
+    .find(
+      (event) =>
+        event.attributes.find((attribute) => attribute.key === SENDER_KEY)?.value === b64encode(sender) &&
+        event.attributes.find((attribute) => attribute.key === AMOUNT_KEY)?.value === b64encode(amount + denom),
+    );
+  const encodedEscrowAddress = escrowTransaction?.attributes.find(
+    (attribute) => attribute.key === RECEPIENT_KEY,
+  )?.value;
+  const escrowAddress = encodedEscrowAddress ? b64decode(encodedEscrowAddress) : null;
+
+  if (!escrowAddress) {
+    logger.error(`No escrow address found for ${packetSrcChannelAttr.value} at block height ${block.header.height}`);
+    return;
+  }
+
   const record = new IBCChannel(
-    packetSrcChannelAttr.value,
+    `${block.block.id}-${packetSrcChannelAttr.value}`,
     block.header.time as any,
     BigInt(block.header.height),
     packetSrcChannelAttr.value,
     sender,
     receiver,
+    escrowAddress,
     denom,
     amount,
   );

@@ -249,6 +249,7 @@ type IBCChannel @entity {
   channelName: String!
   srcAddress: String!
   destAddress: String!
+  escrowAddress: String!
   denomination: String!
   amount: String!
 }

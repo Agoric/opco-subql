@@ -19,6 +19,7 @@ export const EVENT_TYPES = {
   TRANSFER: "transfer",
   SEND_PACKET: "send_packet",
   RECEIVE_PACKET: "recv_packet",
+  IBC_TRANSFER: "ibc_transfer",
 };
 
 export const VAULT_STATES = {
@@ -35,3 +36,9 @@ export const SUBKEY_KEY = b64encode("store_subkey");
 export const UNPROVED_VALUE_KEY = b64encode("unproved_value");
 export const PACKET_DATA_KEY = "packet_data";
 export const PACKET_SRC_CHANNEL_KEY = "packet_src_channel";
+export const ACTION_KEY = b64encode("action");
+export const IBC_MESSAGE_TRANSFER_VALUE = b64encode("/ibc.applications.transfer.v1.MsgTransfer");
+export const RECEPIENT_KEY = b64encode("recipient");
+export const SENDER_KEY = b64encode("sender");
+export const RECEIVER_KEY = b64encode("receiver");
+export const AMOUNT_KEY = b64encode("amount");
