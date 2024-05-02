@@ -2,6 +2,7 @@ import {
   StateChangeEvent,
   IBCChannel,
   IBCTransfer,
+  TransferType,
 } from "../types";
 import { CosmosEvent } from "@subql/types-cosmos";
 import {
@@ -28,6 +29,11 @@ import {
   RECEIVER_KEY,
   SENDER_KEY,
   AMOUNT_KEY,
+  IBC_MESSAGE_RECEIVE_PACKET_VALUE,
+  PACKET_DST_CHANNEL_KEY,
+  PACKET_DST_PORT_KEY,
+  PACKET_SRC_PORT_KEY,
+  TRANSFER_PORT_VALUE,
 } from "./constants";
 import { psmEventKit } from "./events/psm";
 import { boardAuxEventKit } from "./events/boardAux";
@@ -47,6 +53,11 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
     return;
   }
 
+  const packetSrcPortAttr = event.attributes.find((a) => a.key === PACKET_SRC_PORT_KEY);
+  if (!packetSrcPortAttr || packetSrcPortAttr.value !== TRANSFER_PORT_VALUE) {
+    logger.warn("packet_src_port is not transfer");
+    return;
+  }
   const packetDataAttr = event.attributes.find((a) => a.key === PACKET_DATA_KEY);
   if (!packetDataAttr) {
     logger.warn("No packet data attribute found");
@@ -108,15 +119,110 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
     receiver,
     denom,
     amount,
-  );
-  const channelRecord = new IBCChannel(
-    packetSrcChannelAttr.value,
-    packetSrcChannelAttr.value,
-    escrowAddress,
+    TransferType.SEND,
   );
   transferRecord.save();
-  channelRecord.save();
+
+  if (!ibcChannel) {
+    const channelRecord = new IBCChannel(
+      packetSrcChannelAttr.value,
+      packetSrcChannelAttr.value,
+      escrowAddress,
+    );
+    channelRecord.save();
+  }
 }
+
+export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Promise<void> {
+  const { event, block } = cosmosEvent;
+  if (event.type != EVENT_TYPES.RECEIVE_PACKET) {
+    logger.warn("Not valid recv_packet event.");
+    return;
+  }
+
+  const packetDataAttr = event.attributes.find((a) => a.key === PACKET_DATA_KEY);
+  if (!packetDataAttr) {
+    logger.warn("No packet data attribute found");
+    return;
+  }
+
+  const packetDestPortAttr = event.attributes.find((a) => a.key === PACKET_DST_PORT_KEY);
+  if (!packetDestPortAttr || packetDestPortAttr.value !== TRANSFER_PORT_VALUE) {
+    logger.warn("packet_dest_port is not transfer");
+    return;
+  }
+
+  const packetDstChannelAttr = event.attributes.find((a) => a.key === PACKET_DST_CHANNEL_KEY);
+  if (!packetDstChannelAttr) {
+    logger.warn("No packet destination channel found");
+    return;
+  }
+  const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
+
+  const txns = block.txs;
+  const ibcTransaction = txns.find(
+    (txn) =>
+      txn.events.find(
+        (event) =>
+          event.type === EVENT_TYPES.MESSAGE &&
+          event.attributes.find(
+            (attribute) => attribute.key === ACTION_KEY && attribute.value === IBC_MESSAGE_RECEIVE_PACKET_VALUE,
+          ),
+      ) &&
+      txn.events.find(
+        (event) =>
+          event.type === EVENT_TYPES.FUNGIBLE_TOKEN_PACKET &&
+          event.attributes.find((attribute) => attribute.key === SENDER_KEY)?.value === b64encode(sender) &&
+          event.attributes.find((attribute) => attribute.key === RECEIVER_KEY)?.value === b64encode(receiver),
+      ),
+  );
+  const transferEvents = ibcTransaction?.events.filter((event) => event.type === EVENT_TYPES.TRANSFER);
+  const [, , denomUnit] = denom.split('/')
+  const escrowTransaction = transferEvents
+    ?.reverse()
+    .find(
+      (event) =>
+        event.attributes.find((attribute) => attribute.key === RECEPIENT_KEY)?.value === b64encode(receiver) &&
+        event.attributes.find((attribute) => attribute.key === AMOUNT_KEY)?.value === b64encode(amount + denomUnit),
+    );
+  const encodedEscrowAddress = escrowTransaction?.attributes.find(
+    (attribute) => attribute.key === SENDER_KEY,
+  )?.value;
+  const escrowAddress = encodedEscrowAddress ? b64decode(encodedEscrowAddress) : null;
+
+  if (!escrowAddress) {
+    logger.error(`No escrow address found for ${packetDstChannelAttr.value} at block height ${block.header.height}`);
+    return;
+  }
+
+  const ibcChannel = await IBCChannel.get(packetDstChannelAttr.value);
+  if (ibcChannel && ibcChannel.escrowAddress !== escrowAddress) {
+    throw new Error(`Escrow address does not match that of ${packetDstChannelAttr.value}`);
+  }
+
+  const transferRecord = new IBCTransfer(
+    `${block.block.id}-${packetDstChannelAttr.value}`,
+    block.header.time as any,
+    BigInt(block.header.height),
+    packetDstChannelAttr.value,
+    sender,
+    receiver,
+    denom,
+    amount,
+    TransferType.RECEIVE,
+  );
+  transferRecord.save();
+
+  if (!ibcChannel) {
+    const channelRecord = new IBCChannel(
+      packetDstChannelAttr.value,
+      packetDstChannelAttr.value,
+      escrowAddress,
+    );
+    channelRecord.save();
+  }
+}
+
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block } = cosmosEvent;

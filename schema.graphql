@@ -248,6 +248,11 @@ type IBCChannel @entity {
   escrowAddress: String!
 }
 
+enum TransferType {
+  SEND
+  RECEIVE
+}
+
 type IBCTransfer @entity {
   id: ID!
   blockTime: Date!
@@ -257,4 +262,5 @@ type IBCTransfer @entity {
   destAddress: String!
   denomination: String!
   amount: String!
+  transferType: TransferType!
 }

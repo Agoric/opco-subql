@@ -91,6 +91,16 @@ const project: CosmosProject = {
             },
           },
           {
+            handler: "handleIbcReceivePacketEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "recv_packet",
+              messageFilter: {
+                type: "/ibc.core.channel.v1.MsgRecvPacket",
+              },
+            },
+          },
+          {
             handler: "handleStateChangeEvent",
             kind: CosmosHandlerKind.Event,
             filter: {
