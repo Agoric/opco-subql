@@ -1,4 +1,5 @@
 import { Balances } from '../../types';
+import { BALANCE_FIELDS } from '../constants';
 import { b64decode } from '../utils';
 import { CosmosEvent } from '@subql/types-cosmos';
 
@@ -22,9 +23,26 @@ interface BLDTransaction {
   amount: string;
 }
 export const balancesEventKit = () => {
-  function getAttributeValue(decodedData: DecodedEvent, key: string) {
-    const attribute = decodedData.attributes.find((attr) => attr.key === key);
+  function getAttributeValue(data: any, key: string) {
+    const attribute = data.attributes.find(
+      (attr: Attribute) => attr.key === key
+    );
     return attribute ? attribute.value : null;
+  }
+
+  function getData(cosmosEvent: CosmosEvent) {
+    let dataAlreadyDecoded = true;
+    const value = getAttributeValue(cosmosEvent.event, BALANCE_FIELDS.amount);
+
+    if (!value) {
+      dataAlreadyDecoded = false;
+    }
+
+    const data = dataAlreadyDecoded
+      ? cosmosEvent.event
+      : decodeEvent(cosmosEvent);
+
+    return data;
   }
 
   function decodeEvent(cosmosEvent: CosmosEvent): DecodedEvent {
@@ -133,6 +151,7 @@ export const balancesEventKit = () => {
     validateBLDTransaction,
     getAttributeValue,
     decodeEvent,
+    getData,
     addressExists,
     createBalancesEntry,
     updateBalance,

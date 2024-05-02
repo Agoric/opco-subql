@@ -260,21 +260,22 @@ export async function handleTransferEvent(
   }
 
   logger.info('Event:TRANSFER');
+  logger.info(`Event Data:${JSON.stringify(cosmosEvent.event)}`);
 
   const balancesKit = balancesEventKit();
-  const decodedData: DecodedEvent = balancesKit.decodeEvent(cosmosEvent);
-  logger.info(`Decoded transaction data ${JSON.stringify(decodedData)}`);
+  const data = balancesKit.getData(cosmosEvent);
+  logger.info(`Decoded Data:${JSON.stringify(data)}`);
 
   const recipientAddress = balancesKit.getAttributeValue(
-    decodedData,
+    data,
     BALANCE_FIELDS.transfer_recipient
   );
   const senderAddress = balancesKit.getAttributeValue(
-    decodedData,
+    data,
     BALANCE_FIELDS.transfer_sender
   );
   const transactionAmount = balancesKit.getAttributeValue(
-    decodedData,
+    data,
     BALANCE_FIELDS.amount
   );
 
@@ -352,18 +353,19 @@ export async function handleBalanceEvent(
   }
 
   logger.info(`Event:${event.type}`);
+  logger.info(`Event Data:${JSON.stringify(cosmosEvent.event)}`);
 
   const balancesKit = balancesEventKit();
-  const decodedData: DecodedEvent = balancesKit.decodeEvent(cosmosEvent);
-  logger.info(`Decoded transaction data ${JSON.stringify(decodedData)}`);
+  const data = balancesKit.getData(cosmosEvent);
+  logger.info(`Decoded Data:${JSON.stringify(data)}`);
 
   const address = balancesKit.getAttributeValue(
-    decodedData,
+    data,
     BALANCE_FIELDS[event.type as keyof typeof BALANCE_FIELDS]
   );
 
   const transactionAmount = balancesKit.getAttributeValue(
-    decodedData,
+    data,
     BALANCE_FIELDS.amount
   );
 
