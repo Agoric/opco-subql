@@ -16,6 +16,11 @@ export enum Operation {
   Increment = 'increment',
   Decrement = 'decrement',
 }
+
+interface BLDTransaction {
+  isBLDTransaction: boolean;
+  amount: string;
+}
 export const balancesEventKit = () => {
   function getAttributeValue(decodedData: DecodedEvent, key: string) {
     const attribute = decodedData.attributes.find((attr) => attr.key === key);
@@ -63,11 +68,26 @@ export const balancesEventKit = () => {
     logger.info(`Created new entry for address: ${address}`);
   }
 
-  function isBLDTransaction(amount: string) {
-    if (amount.slice(-4) === 'ubld') {
-      return true;
+  function validateBLDTransaction(amount: string | null): BLDTransaction {
+    const result: BLDTransaction = {
+      isBLDTransaction: false,
+      amount: '',
+    };
+
+    if (!amount) {
+      return result;
     }
-    return false;
+    const coins = amount.split(',');
+
+    for (let coin of coins) {
+      if (coin.endsWith('ubld')) {
+        result.isBLDTransaction = true;
+        result.amount = coin;
+        return result;
+      }
+    }
+
+    return result;
   }
 
   async function updateBalance(
@@ -110,7 +130,7 @@ export const balancesEventKit = () => {
   }
 
   return {
-    isBLDTransaction,
+    validateBLDTransaction,
     getAttributeValue,
     decodeEvent,
     addressExists,

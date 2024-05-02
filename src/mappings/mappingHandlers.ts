@@ -288,8 +288,11 @@ export async function handleTransferEvent(
     return;
   }
 
-  if (!transactionAmount || !balancesKit.isBLDTransaction(transactionAmount)) {
-    logger.error(`Amount ${transactionAmount?.slice(0, -4)} invalid.`);
+  const { isBLDTransaction, amount } =
+    balancesKit.validateBLDTransaction(transactionAmount);
+
+  if (!transactionAmount || !isBLDTransaction) {
+    logger.error(`Amount ${transactionAmount} invalid.`);
     return;
   }
 
@@ -306,11 +309,19 @@ export async function handleTransferEvent(
     await balancesKit.createBalancesEntry(senderAddress);
   }
 
-  const adjustedAmount = BigInt(Math.round(Number(transactionAmount.slice(0, -4))));
+  const adjustedAmount = BigInt(Math.round(Number(amount.slice(0, -4))));
 
   await Promise.all([
-    balancesKit.updateBalance(senderAddress, adjustedAmount, Operation.Decrement),
-    balancesKit.updateBalance(recipientAddress, adjustedAmount, Operation.Increment),
+    balancesKit.updateBalance(
+      senderAddress,
+      adjustedAmount,
+      Operation.Decrement
+    ),
+    balancesKit.updateBalance(
+      recipientAddress,
+      adjustedAmount,
+      Operation.Increment
+    ),
   ]);
 }
 
@@ -318,7 +329,7 @@ export async function handleBalanceEvent(
   cosmosEvent: CosmosEvent
 ): Promise<void> {
   const { event } = cosmosEvent;
-  
+
   const incrementEventTypes = [
     EVENT_TYPES.COMMISSION,
     EVENT_TYPES.REWARDS,
@@ -327,10 +338,7 @@ export async function handleBalanceEvent(
     EVENT_TYPES.COINBASE,
   ];
 
-  const decrementEventTypes = [
-    EVENT_TYPES.COIN_SPENT,
-    EVENT_TYPES.BURN,
-  ];
+  const decrementEventTypes = [EVENT_TYPES.COIN_SPENT, EVENT_TYPES.BURN];
 
   let operation: Operation | null = null;
 
@@ -344,7 +352,7 @@ export async function handleBalanceEvent(
   }
 
   logger.info(`Event:${event.type}`);
- 
+
   const balancesKit = balancesEventKit();
   const decodedData: DecodedEvent = balancesKit.decodeEvent(cosmosEvent);
   logger.info(`Decoded transaction data ${JSON.stringify(decodedData)}`);
@@ -364,7 +372,10 @@ export async function handleBalanceEvent(
     return;
   }
 
-  if (!transactionAmount || !balancesKit.isBLDTransaction(transactionAmount)) {
+  const { isBLDTransaction, amount } =
+    balancesKit.validateBLDTransaction(transactionAmount);
+
+  if (!transactionAmount || !isBLDTransaction) {
     logger.error(`Amount ${transactionAmount} invalid.`);
     return;
   }
@@ -375,6 +386,6 @@ export async function handleBalanceEvent(
     await balancesKit.createBalancesEntry(address);
   }
 
-  const amount = BigInt(Math.round(Number(transactionAmount.slice(0, -4))));
-  await balancesKit.updateBalance(address, amount, operation);
+  const formattedAmount = BigInt(Math.round(Number(amount.slice(0, -4))));
+  await balancesKit.updateBalance(address, formattedAmount, operation);
 }
