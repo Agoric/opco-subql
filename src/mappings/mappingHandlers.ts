@@ -1,6 +1,7 @@
 import {
   StateChangeEvent,
   IBCChannel,
+  IBCTransfer,
 } from "../types";
 import { CosmosEvent } from "@subql/types-cosmos";
 import {
@@ -93,19 +94,28 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
     logger.error(`No escrow address found for ${packetSrcChannelAttr.value} at block height ${block.header.height}`);
     return;
   }
+  const ibcChannel = await IBCChannel.get(packetSrcChannelAttr.value);
+  if (ibcChannel && ibcChannel.escrowAddress !== escrowAddress) {
+    throw new Error(`Escrow address does not match that of ${packetSrcChannelAttr.value}`);
+  }
 
-  const record = new IBCChannel(
+  const transferRecord = new IBCTransfer(
     `${block.block.id}-${packetSrcChannelAttr.value}`,
     block.header.time as any,
     BigInt(block.header.height),
     packetSrcChannelAttr.value,
     sender,
     receiver,
-    escrowAddress,
     denom,
     amount,
   );
-  record.save();
+  const channelRecord = new IBCChannel(
+    packetSrcChannelAttr.value,
+    packetSrcChannelAttr.value,
+    escrowAddress,
+  );
+  transferRecord.save();
+  channelRecord.save();
 }
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {

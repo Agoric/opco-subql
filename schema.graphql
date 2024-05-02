@@ -244,12 +244,17 @@ type ReserveMetrics @entity {
 
 type IBCChannel @entity {
   id: ID!
+  channelName: String!
+  escrowAddress: String!
+}
+
+type IBCTransfer @entity {
+  id: ID!
   blockTime: Date!
   blockHeight: BigInt!
   channelName: String!
   srcAddress: String!
   destAddress: String!
-  escrowAddress: String!
   denomination: String!
   amount: String!
 }
