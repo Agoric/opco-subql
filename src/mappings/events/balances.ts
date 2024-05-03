@@ -18,10 +18,12 @@ export enum Operation {
   Decrement = 'decrement',
 }
 
-interface BLDTransaction {
-  isBLDTransaction: boolean;
-  amount: string;
+interface TransactionData {
+  isValidTransaction: boolean;
+  coins: { amount: string; denom: string }[];
 }
+
+const supportedDenominations: Set<string> = new Set(['ubld', 'uist']);
 export const balancesEventKit = () => {
   function getAttributeValue(data: any, key: string) {
     const attribute = data.attributes.find(
@@ -66,8 +68,14 @@ export const balancesEventKit = () => {
     return decodedData;
   }
 
-  async function addressExists(address: string): Promise<boolean> {
-    const balance = await Balances.getByAddress(address);
+  async function addressExists(
+    address: string,
+    denom: string
+  ): Promise<boolean> {
+    const balance = await Balances.getByFields([
+      ['address', '=', address],
+      ['denom', '=', denom],
+    ]);
 
     if (!balance || balance.length === 0) {
       return false;
@@ -75,21 +83,25 @@ export const balancesEventKit = () => {
     return true;
   }
 
-  async function createBalancesEntry(address: string) {
-    const newBalance = new Balances(address);
+  async function createBalancesEntry(
+    address: string,
+    denom: string,
+    primaryKey: string
+  ) {
+    const newBalance = new Balances(primaryKey);
     newBalance.address = address;
     newBalance.balance = BigInt(0);
-    newBalance.denom = 'ubld';
+    newBalance.denom = denom;
 
     await newBalance.save();
 
     logger.info(`Created new entry for address: ${address}`);
   }
 
-  function validateBLDTransaction(amount: string | null): BLDTransaction {
-    const result: BLDTransaction = {
-      isBLDTransaction: false,
-      amount: '',
+  function validateTransaction(amount: string | null): TransactionData {
+    const result: TransactionData = {
+      isValidTransaction: false,
+      coins: [],
     };
 
     if (!amount) {
@@ -98,10 +110,11 @@ export const balancesEventKit = () => {
     const coins = amount.split(',');
 
     for (let coin of coins) {
-      if (coin.endsWith('ubld')) {
-        result.isBLDTransaction = true;
-        result.amount = coin;
-        return result;
+      for (let denom of supportedDenominations) {
+        if (coin.endsWith(denom)) {
+          result.isValidTransaction = true;
+          result.coins.push({ amount: coin.slice(0, -denom.length), denom });
+        }
       }
     }
 
@@ -110,10 +123,14 @@ export const balancesEventKit = () => {
 
   async function updateBalance(
     address: string,
+    denom: string,
     amount: bigint,
     operation: Operation
   ): Promise<void> {
-    const balances = await Balances.getByAddress(address);
+    const balances = await Balances.getByFields([
+      ['address', '=', address],
+      ['denom', '=', denom],
+    ]);
 
     if (!balances || balances.length === 0) {
       logger.error(`Balance not found for address: ${address}`);
@@ -148,7 +165,7 @@ export const balancesEventKit = () => {
   }
 
   return {
-    validateBLDTransaction,
+    validateTransaction,
     getAttributeValue,
     decodeEvent,
     getData,

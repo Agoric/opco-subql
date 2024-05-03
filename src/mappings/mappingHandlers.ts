@@ -310,22 +310,26 @@ export async function handleBalanceEvent(
     return;
   }
 
-  const { isBLDTransaction, amount } =
-    balancesKit.validateBLDTransaction(transactionAmount);
+  const { isValidTransaction, coins } =
+    balancesKit.validateTransaction(transactionAmount);
 
-  if (!transactionAmount || !isBLDTransaction) {
+  if (!transactionAmount || !isValidTransaction) {
     logger.error(`Amount ${transactionAmount} invalid.`);
     return;
   }
 
-  const entryExists = await balancesKit.addressExists(address);
+  for (let coin of coins) {
+    const { amount, denom } = coin;
+    const entryExists = await balancesKit.addressExists(address, denom);
 
-  if (!entryExists) {
-    await balancesKit.createBalancesEntry(address);
+    if (!entryExists) {
+      const primaryKey = `${address}-${denom}`;
+      await balancesKit.createBalancesEntry(address, denom, primaryKey);
+    }
+
+    const formattedAmount = BigInt(Math.round(Number(amount)));
+    await balancesKit.updateBalance(address, denom, formattedAmount, operation);
   }
-
-  const formattedAmount = BigInt(Math.round(Number(amount.slice(0, -4))));
-  await balancesKit.updateBalance(address, formattedAmount, operation);
 }
 
 export async function initiateBalancesTable(block: CosmosBlock): Promise<void> {
@@ -334,14 +338,15 @@ export async function initiateBalancesTable(block: CosmosBlock): Promise<void> {
       process.env.network === 'main' ? mainnetGenesisData : localGenesisData;
 
     for (let element of data.balances) {
-      const newBalance = new Balances(element.address);
-      newBalance.address = element.address;
+      let newBalance;
       for (const coin of element.coins) {
+        newBalance = new Balances(`${element.address}-${coin.denom}`);
+        newBalance.address = element.address;
         newBalance.balance = BigInt(coin.amount);
         newBalance.denom = coin.denom;
-      }
 
-      await newBalance.save();
+        await newBalance.save();
+      }
     }
 
     logger.info(`Balances Table Initiated`);
