@@ -64,6 +64,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
 
     if (vault.state === VAULT_STATES.LIQUIDATED && !vault.liquidatedAt) {
       vault.liquidatedAt = block.block.header.time;
+      vault.liquidated = true;
     }
     return [vault.save()];
   }
