@@ -49,7 +49,8 @@ import { priceFeedEventKit } from "./events/priceFeed";
 import { vaultsEventKit } from "./events/vaults";
 import { reservesEventKit } from "./events/reserves";
 import { DecodedEvent, Operation, balancesEventKit } from "./events/balances";
-
+import localGenesisData from "../../genesis-local.json";
+import mainnetGenesisData from "../../genesis-main.json";
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -305,7 +306,7 @@ export async function handleBalanceEvent(
   );
 
   if (!address) {
-    logger.error('Address is missing or invalid.');
+    logger.error(`Address ${address} is missing or invalid.`);
     return;
   }
 
@@ -328,14 +329,23 @@ export async function handleBalanceEvent(
 }
 
 export async function initiateBalancesTable(block: CosmosBlock): Promise<void> {
-  const newBalance = new Balances(
-    'agoric1estsewt6jqsx77pwcxkn5ah0jqgu8rhgflwfdl'
-  );
-  newBalance.address = 'agoric1estsewt6jqsx77pwcxkn5ah0jqgu8rhgflwfdl';
-  newBalance.balance = BigInt(999999995000000000);
-  newBalance.denom = 'ubld';
+  try {
+    const data =
+      process.env.network === 'main' ? mainnetGenesisData : localGenesisData;
 
-  await newBalance.save();
+    for (let element of data.balances) {
+      const newBalance = new Balances(element.address);
+      newBalance.address = element.address;
+      for (const coin of element.coins) {
+        newBalance.balance = BigInt(coin.amount);
+        newBalance.denom = coin.denom;
+      }
 
-  logger.info(`Balances Table Initiated`);
+      await newBalance.save();
+    }
+
+    logger.info(`Balances Table Initiated`);
+  } catch (error) {
+    logger.error(`Error initiating balances table: ${error}`);
+  }
 }
