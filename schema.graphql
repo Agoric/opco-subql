@@ -145,7 +145,8 @@ type Vault @entity {
   state: String
   wallet: Wallet!
   liquidatingAt: Date
-  liquidatedAt: Date  
+  liquidatedAt: Date
+  liquidated: Boolean
 }
 
 type VaultManagerMetrics @entity {
