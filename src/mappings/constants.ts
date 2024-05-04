@@ -47,5 +47,4 @@ export const RECEPIENT_KEY = b64encode("recipient");
 export const SENDER_KEY = b64encode("sender");
 export const RECEIVER_KEY = b64encode("receiver");
 export const AMOUNT_KEY = b64encode("amount");
-export const TRANSFER_PORT_VALUE = 'transfer';
-
+export const TRANSFER_PORT_VALUE = "transfer";

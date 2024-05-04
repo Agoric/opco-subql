@@ -1,3 +1,6 @@
+import { bech32 } from "bech32";
+import sha256 from "js-sha256";
+
 export function extractBrand(str: string): string {
   return str.replace("Alleged: ", "").replace(" brand", "");
 }
@@ -95,3 +98,13 @@ export function dateToDayKey(timestamp: any): number {
   const day = date.getUTCDate().toString().padStart(2, "0");
   return parseInt(`${year}${month}${day}`);
 }
+
+export const getEscrowAddress = (port: string, channel: string) => {
+  const version = "ics20-1";
+  const chainPrefix = "agoric";
+  const stringtoSha = Buffer.from([...Buffer.from(version), 0, ...Buffer.from(`${port}/${channel}`)]);
+  const shaHash = sha256.sha256.array(stringtoSha.toString());
+  const bechWords = bech32.toWords(shaHash.slice(0, 20));
+  const address = bech32.encode(chainPrefix, bechWords);
+  return address;
+};
