@@ -1,10 +1,10 @@
-import { PsmGovernance, PsmMetric, PsmMetricDaily } from "../../types";
+import { PsmGovernance, PsmMetrics, PsmMetricsDaily } from "../../types";
 import { dateToDayKey } from "../utils";
 
 export const psmEventKit = (block: any, data: any, module: string, path: string) => {
   async function savePsmMetrics(payload: any): Promise<Promise<any>[]> {
     const psmMetricDaily = savePsmMetricDaily(payload);
-    const psmMetric = new PsmMetric(
+    const psmMetric = new PsmMetrics(
       path,
       BigInt(data.blockHeight),
       block.block.header.time as any,
@@ -25,7 +25,7 @@ export const psmEventKit = (block: any, data: any, module: string, path: string)
 
     let state = await getPsmMetricDaily(dateKey);
 
-    state.token = path.split(".")[3];
+    state.denom = path.split(".")[3];
 
     state.anchorPoolBalanceLast = BigInt(payload.anchorPoolBalance.__value);
     state.feePoolBalanceLast = BigInt(payload.feePoolBalance.__value);
@@ -33,23 +33,16 @@ export const psmEventKit = (block: any, data: any, module: string, path: string)
     state.totalAnchorProvidedLast = BigInt(payload.totalAnchorProvided.__value);
     state.totalMintedProvidedLast = BigInt(payload.totalMintedProvided.__value);
 
-    state.anchorPoolBalanceSum = (state.anchorPoolBalanceSum ?? BigInt(0)) + BigInt(payload.anchorPoolBalance.__value);
-    state.feePoolBalanceSum = (state.feePoolBalanceSum ?? BigInt(0)) + BigInt(payload.feePoolBalance.__value);
-    state.mintedPoolBalanceSum = (state.mintedPoolBalanceSum ?? BigInt(0)) + BigInt(payload.mintedPoolBalance.__value);
-    state.totalAnchorProvidedSum =
-      (state.totalAnchorProvidedSum ?? BigInt(0)) + BigInt(payload.totalAnchorProvided.__value);
-    state.totalMintedProvidedSum =
-      (state.totalMintedProvidedSum ?? BigInt(0)) + BigInt(payload.totalMintedProvided.__value);
     state.metricsCount = (state.metricsCount ?? BigInt(0)) + BigInt(1);
 
     return state.save();
   }
 
-  async function getPsmMetricDaily(dateKey: number): Promise<PsmMetricDaily> {
+  async function getPsmMetricDaily(dateKey: number): Promise<PsmMetricsDaily> {
     const id = path + ":" + dateKey.toString();
-    let state = await PsmMetricDaily.get(id);
+    let state = await PsmMetricsDaily.get(id);
     if (!state) {
-      state = new PsmMetricDaily(id, path, dateKey, BigInt(data.blockHeight), new Date(block.block.header.time as any));
+      state = new PsmMetricsDaily(id, path, dateKey, BigInt(data.blockHeight), new Date(block.block.header.time as any));
     }
     return state;
   }

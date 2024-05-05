@@ -9,15 +9,16 @@ export const priceFeedEventKit = (block: any, data: any, module: string, path: s
     const typeOutName = matchTypeOutName ? matchTypeOutName[1] : undefined;
 
     if (typeInName !== undefined && typeOutName !== undefined) {
+      const id = `${typeInName}-${typeOutName}`;
       // First save daily Oracle Prices
-      const oraclePriceDaily = saveOraclePriceDaily(payload, typeInName, typeOutName);
+      const oraclePriceDaily = saveOraclePriceDaily(id, payload, typeInName, typeOutName);
 
       // Save the Oracle Price
       const oraclePrice = new OraclePrice(
-        path,
+        id,
         BigInt(data.blockHeight),
         block.block.header.time as any,
-        path.split("published.priceFeed.")[1],
+        id,
         BigInt(payload.amountIn.__value),
         BigInt(payload.amountOut.__value),
         typeInName,
@@ -29,12 +30,10 @@ export const priceFeedEventKit = (block: any, data: any, module: string, path: s
     return [];
   }
 
-  async function saveOraclePriceDaily(payload: any, typeInName: string, typeOutName: string): Promise<any> {
+  async function saveOraclePriceDaily(id: string, payload: any, typeInName: string, typeOutName: string): Promise<any> {
     const dateKey = dateToDayKey(block.block.header.time);
 
-    let state = await getOraclePriceDaily(path, dateKey);
-
-    state.priceFeedName = path.split("published.priceFeed.")[1];
+    let state = await getOraclePriceDaily(id, dateKey);
 
     state.typeInAmountLast = BigInt(BigInt(payload.amountIn.__value));
     state.typeInAmountSum = (state.typeInAmountSum ?? BigInt(0)) + BigInt(payload.amountIn.__value);
@@ -49,13 +48,12 @@ export const priceFeedEventKit = (block: any, data: any, module: string, path: s
     return state.save();
   }
 
-  async function getOraclePriceDaily(path: string, dateKey: number): Promise<OraclePriceDaily> {
-    const id = path + ":" + dateKey.toString();
+  async function getOraclePriceDaily(feedName: string, dateKey: number): Promise<OraclePriceDaily> {
+    const id = feedName + ":" + dateKey.toString();
     let state = await OraclePriceDaily.get(id);
     if (!state) {
       state = new OraclePriceDaily(
         id,
-        path,
         dateKey,
         BigInt(data.blockHeight),
         new Date(block.block.header.time as any)

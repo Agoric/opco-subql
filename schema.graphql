@@ -36,7 +36,7 @@ type StateChangeEvent @entity {
   blockHeight: BigInt!
   blockTime: Date!
   module: String! @index
-  path: String!
+  path: String! @index
   idx: Int!
   slots: String!
   body: String!
@@ -55,11 +55,9 @@ type OraclePrice @entity {
 
 type OraclePriceDaily @entity {
   id: ID!
-  path: String! @index
   dateKey: Int! @index # YYYYMMDD format
   blockHeightLast: BigInt!
   blockTimeLast: Date!
-  priceFeedName: String
   typeInAmountLast: BigInt
   typeInAmountSum: BigInt
   typeOutAmountLast: BigInt
@@ -69,12 +67,12 @@ type OraclePriceDaily @entity {
   metricsCount: BigInt
 }
 
-type PsmMetric @entity {
+type PsmMetrics @entity {
   id: ID!
   blockHeight: BigInt!
   blockTime: Date!
-  coin: String!
-  token: String!
+  coin: String! # use denom instead
+  denom: String!
   anchorPoolBalance: BigInt!
   feePoolBalance: BigInt!
   mintedPoolBalance: BigInt!
@@ -82,24 +80,19 @@ type PsmMetric @entity {
   totalMintedProvided: BigInt!
 }
 
-type PsmMetricDaily @entity {
+type PsmMetricsDaily @entity {
   id: ID!
   path: String! @index
   dateKey: Int! @index # YYYYMMDD format
   blockHeightLast: BigInt!
   blockTimeLast: Date!
-  token: String @index
+  denom: String @index
 
   anchorPoolBalanceLast: BigInt
-  anchorPoolBalanceSum: BigInt
   feePoolBalanceLast: BigInt
-  feePoolBalanceSum: BigInt
   mintedPoolBalanceLast: BigInt
-  mintedPoolBalanceSum: BigInt
   totalAnchorProvidedLast: BigInt
-  totalAnchorProvidedSum: BigInt
   totalMintedProvidedLast: BigInt
-  totalMintedProvidedSum: BigInt
   metricsCount: BigInt
 }
 
@@ -107,8 +100,8 @@ type PsmGovernance @entity {
   id: ID!
   blockHeight: BigInt!
   blockTime: Date!
-  coin: String!
-  token: String!
+  coin: String! # use denom instead
+  denom: String!
   mintLimit: BigInt!
   giveMintedFeeDenominator: BigInt!
   giveMintedFeeNumerator: BigInt!
@@ -139,8 +132,8 @@ type Vault @entity {
   blockTime: Date!
   balance: BigInt
   lockedValue: BigInt
-  coin: String @index
-  token: String @index
+  coin: String @index # use denom instead
+  denom: String @index
   debt: BigInt
   state: String
   wallet: Wallet!
@@ -182,35 +175,20 @@ type VaultManagerMetricsDaily @entity {
   liquidatingDebtBrand: String
 
   liquidatingCollateralValueLast: BigInt
-  liquidatingCollateralValueSum: BigInt
   liquidatingDebtValueLast: BigInt
-  liquidatingDebtValueSum: BigInt
   lockedQuoteDenominatorLast: BigInt
-  lockedQuoteDenominatorSum: BigInt
   lockedQuoteNumeratorLast: BigInt
-  lockedQuoteNumeratorSum: BigInt
   numActiveVaultsLast: BigInt
-  numActiveVaultsSum: BigInt
   numLiquidatingVaultsLast: BigInt
-  numLiquidatingVaultsSum: BigInt
   numLiquidationsAbortedLast: BigInt
-  numLiquidationsAbortedSum: BigInt
   numLiquidationsCompletedLast: BigInt
-  numLiquidationsCompletedSum: BigInt
   retainedCollateralLast: BigInt
-  retainedCollateralSum: BigInt
   totalCollateralLast: BigInt
-  totalCollateralSum: BigInt
   totalCollateralSoldLast: BigInt
-  totalCollateralSoldSum: BigInt
   totalDebtLast: BigInt
-  totalDebtSum: BigInt
   totalOverageReceivedLast: BigInt
-  totalOverageReceivedSum: BigInt
   totalProceedsReceivedLast: BigInt
-  totalProceedsReceivedSum: BigInt
   totalShortfallReceivedLast: BigInt
-  totalShortfallReceivedSum: BigInt
 
   metricsCount: BigInt
 }
@@ -236,7 +214,7 @@ type ReserveAllocationMetrics @entity {
   id: ID!
   blockHeight: BigInt!
   blockTime: Date!
-  token: String! @index
+  denom: String! @index
   key: String! @index
   value: BigInt!
   reserveMetrics: ReserveMetrics!
@@ -248,10 +226,9 @@ type ReserveAllocationMetricsDaily @entity {
   dateKey: Int! @index # YYYYMMDD format
   blockHeightLast: BigInt!
   blockTimeLast: Date!
-  token: String @index
+  denom: String @index
   key: String
   valueLast: BigInt
-  valueSum: BigInt
   metricsCount: BigInt
 }
 
