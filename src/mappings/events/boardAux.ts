@@ -10,7 +10,7 @@ export const boardAuxEventKit = (block: any, data: any, module: string, path: st
       payload.displayInfo.assetKind,
       payload.displayInfo.decimalPlaces ?? 0
     ).save();
-    // logger.info("boardAux: " + JSON.stringify(boardAux));
+
     return [boardAux];
   }
 

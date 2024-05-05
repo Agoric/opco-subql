@@ -52,7 +52,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     }
 
     vault.coin = payload?.locked?.__brand;
-    vault.token = payload?.locked?.__brand;
+    vault.denom = payload?.locked?.__brand;
     vault.debt = payload?.debtSnapshot?.debt?.__value;
     vault.balance = payload?.locked?.__value;
     vault.lockedValue = payload?.locked?.__value;
@@ -120,33 +120,6 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     state.totalOverageReceivedLast = BigInt(payload.totalOverageReceived.__value);
     state.totalProceedsReceivedLast = BigInt(payload.totalProceedsReceived.__value);
     state.totalShortfallReceivedLast = BigInt(payload.totalShortfallReceived.__value);
-
-    state.liquidatingCollateralValueSum =
-      (state.liquidatingCollateralValueSum ?? BigInt(0)) + BigInt(payload.liquidatingCollateral.__value);
-    state.liquidatingDebtValueSum =
-      (state.liquidatingDebtValueSum ?? BigInt(0)) + BigInt(payload.liquidatingDebt.__value);
-    state.lockedQuoteDenominatorSum =
-      (state.lockedQuoteDenominatorSum ?? BigInt(0)) + BigInt(payload.lockedQuote?.denominator.__value ?? 0);
-    state.lockedQuoteNumeratorSum =
-      (state.lockedQuoteNumeratorSum ?? BigInt(0)) + BigInt(payload.lockedQuote?.numerator.__value ?? 0);
-    state.numActiveVaultsSum = (state.numActiveVaultsSum ?? BigInt(0)) + BigInt(payload.numActiveVaults);
-    state.numLiquidatingVaultsSum = (state.numLiquidatingVaultsSum ?? BigInt(0)) + BigInt(payload.numLiquidatingVaults);
-    state.numLiquidationsAbortedSum =
-      (state.numLiquidationsAbortedSum ?? BigInt(0)) + BigInt(payload.numLiquidationsAborted);
-    state.numLiquidationsCompletedSum =
-      (state.numLiquidationsCompletedSum ?? BigInt(0)) + BigInt(payload.numLiquidationsCompleted);
-    state.retainedCollateralSum =
-      (state.retainedCollateralSum ?? BigInt(0)) + BigInt(payload.retainedCollateral.__value);
-    state.totalCollateralSum = (state.totalCollateralSum ?? BigInt(0)) + BigInt(payload.totalCollateral.__value);
-    state.totalCollateralSoldSum =
-      (state.totalCollateralSoldSum ?? BigInt(0)) + BigInt(payload.totalCollateralSold.__value);
-    state.totalDebtSum = (state.totalDebtSum ?? BigInt(0)) + BigInt(payload.totalDebt.__value);
-    state.totalOverageReceivedSum =
-      (state.totalOverageReceivedSum ?? BigInt(0)) + BigInt(payload.totalOverageReceived.__value);
-    state.totalProceedsReceivedSum =
-      (state.totalProceedsReceivedSum ?? BigInt(0)) + BigInt(payload.totalProceedsReceived.__value);
-    state.totalShortfallReceivedSum =
-      (state.totalShortfallReceivedSum ?? BigInt(0)) + BigInt(payload.totalShortfallReceived.__value);
 
     state.metricsCount = (state.metricsCount ?? BigInt(0)) + BigInt(1);
     return [state.save()];

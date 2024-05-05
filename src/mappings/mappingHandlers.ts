@@ -1,31 +1,12 @@
 import {
-  Message,
-  TransferEvent,
   StateChangeEvent,
-  OraclePrice,
-  OraclePriceDaily,
-  PsmMetric,
-  PsmGovernance,
-  Wallet,
-  Vault,
-  VaultManagerMetrics,
-  VaultManagerGovernance,
-  ReserveMetrics,
-  ReserveAllocationMetrics,
-  BoardAux,
-  VaultManagerMetricsDaily,
-  PsmMetricDaily,
-  ReserveAllocationMetricsDaily,
 } from "../types";
 import { CosmosEvent } from "@subql/types-cosmos";
 import {
-  b64encode,
   b64decode,
   extractStoragePath,
   getStateChangeModule,
-  extractBrand,
   resolveBrandNamesAndValues,
-  dateToDayKey,
 } from "./utils";
 
 import {

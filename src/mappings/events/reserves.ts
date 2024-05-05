@@ -19,13 +19,15 @@ export const reservesEventKit = (block: any, data: any, module: string, path: st
       if (payload.allocations.hasOwnProperty(key)) {
         const allocation = payload.allocations[key];
         // Save daily metrics
-        saveReserveAllocationMetricDaily(payload, allocation, key);
+        const brand = extractBrand(allocation.__brand);
+        const reserveAllocationMetricDaily = saveReserveAllocationMetricDaily(brand, payload, allocation, key);
+        promises.push(reserveAllocationMetricDaily);
 
         const reserveAllocationMetric = new ReserveAllocationMetrics(
-          `${path}:${key}`,
+          `${brand}`,
           BigInt(data.blockHeight),
           block.block.header.time as any,
-          extractBrand(allocation.__brand),
+          brand,
           key,
           BigInt(allocation.__value),
           reserveMetric.id
@@ -38,29 +40,28 @@ export const reservesEventKit = (block: any, data: any, module: string, path: st
     return promises;
   }
 
-  async function saveReserveAllocationMetricDaily(payload: any, allocation: any, key: string): Promise<Promise<any>[]> {
+  async function saveReserveAllocationMetricDaily(brand: string, payload: any, allocation: any, key: string): Promise<any> {
     const dateKey = dateToDayKey(block.block.header.time);
 
-    let state = await getReserveAllocationMetricDaily(path, dateKey);
+    let state = await getReserveAllocationMetricDaily(brand, dateKey);
 
-    state.token = allocation.__brand;
+    state.denom = allocation.__brand;
     state.key = key;
     state.valueLast = BigInt(allocation.__value);
-    state.valueSum = (state.valueSum ?? BigInt(0)) + BigInt(allocation.__value);
     state.metricsCount = (state.metricsCount ?? BigInt(0)) + BigInt(1);
-    return [state.save()];
+    return state.save();
   }
 
   async function getReserveAllocationMetricDaily(
-    path: string,
+    brand: string,
     dateKey: number
   ): Promise<ReserveAllocationMetricsDaily> {
-    const id = path + ":" + dateKey.toString();
+    const id = brand + ":" + dateKey.toString();
     let state = await ReserveAllocationMetricsDaily.get(id);
     if (!state) {
       state = new ReserveAllocationMetricsDaily(
         id,
-        path,
+        brand,
         dateKey,
         BigInt(data.blockHeight),
         new Date(block.block.header.time as any)
