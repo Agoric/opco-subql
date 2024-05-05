@@ -242,10 +242,14 @@ type ReserveMetrics @entity {
   allocations: [ReserveAllocationMetrics] @derivedFrom(field: "reserveMetrics")
 }
 
+type Account @entity {
+  id: ID!
+}
+
 type IBCChannel @entity {
   id: ID!
   channelName: String!
-  escrowAddress: String!
+  escrowAccount: Account!
 }
 
 enum TransferType {
@@ -257,9 +261,9 @@ type IBCTransfer @entity {
   id: ID!
   blockTime: Date!
   blockHeight: BigInt!
-  channelName: String!
-  srcAddress: String!
-  destAddress: String!
+  channel: IBCChannel!
+  srcAccount: Account!
+  destAccount: Account!
   denomination: String!
   amount: String!
   transferType: TransferType!
