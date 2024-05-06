@@ -264,7 +264,7 @@ type IBCTransfer @entity {
   channel: IBCChannel!
   srcAccount: Account!
   destAccount: Account!
-  denomination: String!
+  denom: String!
   amount: String!
   transferType: TransferType!
 }

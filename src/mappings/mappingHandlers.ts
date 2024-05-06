@@ -51,7 +51,7 @@ async function saveIbcChannel(channelName: string) {
   const generatedEscrowAddress = getEscrowAddress(TRANSFER_PORT_VALUE, channelName);
 
   const channelRecord = new IBCChannel(channelName, channelName, generatedEscrowAddress);
-  channelRecord.save();
+  await channelRecord.save();
 }
 
 export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promise<void> {
@@ -80,7 +80,7 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
   const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
   const sourceChannel = packetSrcChannelAttr.value;
 
-  saveIbcChannel(sourceChannel);
+  await saveIbcChannel(sourceChannel);
 
   const transferRecord = new IBCTransfer(
     tx.hash,
@@ -93,7 +93,7 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
     amount,
     TransferType.SEND,
   );
-  transferRecord.save();
+  await transferRecord.save();
 }
 
 export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Promise<void> {
@@ -123,7 +123,7 @@ export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Pro
   const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
   const destinationChannel = packetDstChannelAttr.value;
 
-  saveIbcChannel(destinationChannel);
+  await saveIbcChannel(destinationChannel);
 
   const transferRecord = new IBCTransfer(
     tx.hash,
@@ -136,7 +136,7 @@ export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Pro
     amount,
     TransferType.RECEIVE,
   );
-  transferRecord.save();
+  await transferRecord.save();
 }
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
