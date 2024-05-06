@@ -54,6 +54,20 @@ const project: CosmosProject = {
   dataSources: [
     {
       kind: CosmosDatasourceKind.Runtime,
+      startBlock: 1,
+      endBlock: 1,
+      mapping: {
+        file: "./dist/index.js",
+        handlers: [
+          {
+            kind: CosmosHandlerKind.Block,
+            handler: "initiateBalancesTable",
+          },
+        ],
+      },
+    },
+    {
+      kind: CosmosDatasourceKind.Runtime,
       // First block of mainnet is 2115669
       // startBlock: 2115669,
       // startBlock: 14347000,
@@ -138,13 +152,6 @@ const project: CosmosProject = {
               type: "burn",
             },
           },
-          // {
-          //   handler: "handleTransferEvent",
-          //   kind: CosmosHandlerKind.Event,
-          //   filter: {
-          //     type: "transfer",
-          //   },
-          // },
           // Distribution Events
           {
             handler: "handleBalanceEvent",

@@ -3,8 +3,21 @@ import {
   IBCChannel,
   IBCTransfer,
   TransferType,
+  OraclePrice,
+  OraclePriceDaily,
+  PsmGovernance,
+  Wallet,
+  Vault,
+  VaultManagerMetrics,
+  VaultManagerGovernance,
+  ReserveMetrics,
+  ReserveAllocationMetrics,
+  BoardAux,
+  VaultManagerMetricsDaily,
+  ReserveAllocationMetricsDaily,
+  Balances,
 } from "../types";
-import { CosmosEvent } from "@subql/types-cosmos";
+import { CosmosBlock, CosmosEvent } from "@subql/types-cosmos";
 import {
   b64decode,
   extractStoragePath,
@@ -312,4 +325,17 @@ export async function handleBalanceEvent(
 
   const formattedAmount = BigInt(Math.round(Number(amount.slice(0, -4))));
   await balancesKit.updateBalance(address, formattedAmount, operation);
+}
+
+export async function initiateBalancesTable(block: CosmosBlock): Promise<void> {
+  const newBalance = new Balances(
+    'agoric1estsewt6jqsx77pwcxkn5ah0jqgu8rhgflwfdl'
+  );
+  newBalance.address = 'agoric1estsewt6jqsx77pwcxkn5ah0jqgu8rhgflwfdl';
+  newBalance.balance = BigInt(999999995000000000);
+  newBalance.denom = 'ubld';
+
+  await newBalance.save();
+
+  logger.info(`Balances Table Initiated`);
 }
