@@ -11,6 +11,11 @@ export interface DecodedEvent {
   type: string;
   attributes: Attribute[];
 }
+
+export enum Operation {
+  Increment = 'increment',
+  Decrement = 'decrement',
+}
 export const balancesEventKit = () => {
   function getAttributeValue(decodedData: DecodedEvent, key: string) {
     const attribute = decodedData.attributes.find((attr) => attr.key === key);
@@ -40,7 +45,8 @@ export const balancesEventKit = () => {
 
   async function addressExists(address: string): Promise<boolean> {
     const balance = await Balances.getByAddress(address);
-    if (balance?.length === 0) {
+
+    if (!balance || balance.length === 0) {
       return false;
     }
     return true;
@@ -50,55 +56,65 @@ export const balancesEventKit = () => {
     const newBalance = new Balances(address);
     newBalance.address = address;
     newBalance.balance = BigInt(0);
-    newBalance.denom = '';
+    newBalance.denom = 'ubld';
 
     await newBalance.save();
 
     logger.info(`Created new entry for address: ${address}`);
   }
 
-  async function updateBalances(
-    senderAddress: string,
-    recipientAddress: string,
-    amount: bigint
+  function isBLDTransaction(amount: string) {
+    if (amount.slice(-4) === 'ubld') {
+      return true;
+    }
+    return false;
+  }
+
+  async function updateBalance(
+    address: string,
+    amount: bigint,
+    operation: Operation
   ): Promise<void> {
-    const senderBalances = await Balances.getByAddress(senderAddress);
-    const recipientBalances = await Balances.getByAddress(recipientAddress);
+    const balances = await Balances.getByAddress(address);
 
-    if (!senderBalances || senderBalances.length === 0) {
-      logger.error(`Sender balance not found for address: ${senderAddress}`);
+    if (!balances || balances.length === 0) {
+      logger.error(`Balance not found for address: ${address}`);
       return;
     }
 
-    if (!recipientBalances || recipientBalances.length === 0) {
-      logger.error(
-        `Recipient balance not found for address: ${recipientAddress}`
+    const balance = balances[0];
+    const currentBalance = balance.balance ?? BigInt(0);
+    let newBalance: bigint;
+
+    if (operation === Operation.Increment) {
+      newBalance = currentBalance + amount;
+      balance.balance = newBalance;
+      logger.info(
+        `Incremented balance for ${address} by ${amount}. New balance: ${balance.balance}`
       );
-      return;
+    } else if (operation === Operation.Decrement) {
+      newBalance = currentBalance - amount;
+      if (newBalance < 0) {
+        logger.error(
+          `Attempt to decrement ${amount} would result in a negative balance. Current balance: ${currentBalance}.`
+        );
+        return;
+      }
+      balance.balance = newBalance;
+      logger.info(
+        `Decremented balance for ${address} by ${amount}. New balance: ${balance.balance}`
+      );
     }
 
-    const senderBalance = senderBalances[0];
-    const recipientBalance = recipientBalances[0];
-
-    const senderCurrentBalance = senderBalance.balance ?? BigInt(0);
-    const recipientCurrentBalance = recipientBalance.balance ?? BigInt(0);
-
-    senderBalance.balance = senderCurrentBalance - amount;
-    recipientBalance.balance = recipientCurrentBalance + amount;
-
-    await senderBalance.save();
-    await recipientBalance.save();
-
-    logger.info(
-      `Updated balances: Sender ${senderAddress} balance: ${senderBalance.balance}, Recipient ${recipientAddress} balance: ${recipientBalance.balance}`
-    );
+    await balance.save();
   }
 
   return {
+    isBLDTransaction,
     getAttributeValue,
     decodeEvent,
     addressExists,
     createBalancesEntry,
-    updateBalances,
+    updateBalance,
   };
 };

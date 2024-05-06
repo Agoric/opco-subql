@@ -28,14 +28,14 @@ import {
   PACKET_DST_PORT_KEY,
   PACKET_SRC_PORT_KEY,
   TRANSFER_PORT_VALUE,
-  TRANSACTION_FIELDS
+  BALANCE_FIELDS
 } from "./constants";
 import { psmEventKit } from "./events/psm";
 import { boardAuxEventKit } from "./events/boardAux";
 import { priceFeedEventKit } from "./events/priceFeed";
 import { vaultsEventKit } from "./events/vaults";
 import { reservesEventKit } from "./events/reserves";
-import { DecodedEvent, balancesEventKit } from "./events/balances";
+import { DecodedEvent, Operation, balancesEventKit } from "./events/balances";
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -252,27 +252,30 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 export async function handleTransferEvent(
   cosmosEvent: CosmosEvent
 ): Promise<void> {
-  const { event, block } = cosmosEvent;
+  const { event } = cosmosEvent;
 
   if (event.type != EVENT_TYPES.TRANSFER) {
     logger.warn('Not valid transfer event.');
     return;
   }
 
+  logger.info('Event:TRANSFER');
+
   const balancesKit = balancesEventKit();
   const decodedData: DecodedEvent = balancesKit.decodeEvent(cosmosEvent);
+  logger.info(`Decoded transaction data ${JSON.stringify(decodedData)}`);
 
   const recipientAddress = balancesKit.getAttributeValue(
     decodedData,
-    TRANSACTION_FIELDS.RECIPIENT
+    BALANCE_FIELDS.transfer_recipient
   );
   const senderAddress = balancesKit.getAttributeValue(
     decodedData,
-    TRANSACTION_FIELDS.SENDER
+    BALANCE_FIELDS.transfer_sender
   );
   const transactionAmount = balancesKit.getAttributeValue(
     decodedData,
-    TRANSACTION_FIELDS.AMOUNT
+    BALANCE_FIELDS.amount
   );
 
   if (!recipientAddress) {
@@ -285,8 +288,8 @@ export async function handleTransferEvent(
     return;
   }
 
-  if (!transactionAmount) {
-    logger.error('Transaction amount is missing or invalid.');
+  if (!transactionAmount || !balancesKit.isBLDTransaction(transactionAmount)) {
+    logger.error(`Amount ${transactionAmount?.slice(0, -4)} invalid.`);
     return;
   }
 
@@ -303,9 +306,75 @@ export async function handleTransferEvent(
     await balancesKit.createBalancesEntry(senderAddress);
   }
 
-  balancesKit.updateBalances(
-    senderAddress,
-    recipientAddress,
-    BigInt(transactionAmount.slice(0, -4))
+  const adjustedAmount = BigInt(Math.round(Number(transactionAmount.slice(0, -4))));
+
+  await Promise.all([
+    balancesKit.updateBalance(senderAddress, adjustedAmount, Operation.Decrement),
+    balancesKit.updateBalance(recipientAddress, adjustedAmount, Operation.Increment),
+  ]);
+}
+
+export async function handleBalanceEvent(
+  cosmosEvent: CosmosEvent
+): Promise<void> {
+  const { event } = cosmosEvent;
+  
+  const incrementEventTypes = [
+    EVENT_TYPES.COMMISSION,
+    EVENT_TYPES.REWARDS,
+    EVENT_TYPES.PROPOSER_REWARD,
+    EVENT_TYPES.COIN_RECEIVED,
+    EVENT_TYPES.COINBASE,
+  ];
+
+  const decrementEventTypes = [
+    EVENT_TYPES.COIN_SPENT,
+    EVENT_TYPES.BURN,
+  ];
+
+  let operation: Operation | null = null;
+
+  if (incrementEventTypes.includes(event.type)) {
+    operation = Operation.Increment;
+  } else if (decrementEventTypes.includes(event.type)) {
+    operation = Operation.Decrement;
+  } else {
+    logger.warn(`${event.type} is not a valid balance event.`);
+    return;
+  }
+
+  logger.info(`Event:${event.type}`);
+ 
+  const balancesKit = balancesEventKit();
+  const decodedData: DecodedEvent = balancesKit.decodeEvent(cosmosEvent);
+  logger.info(`Decoded transaction data ${JSON.stringify(decodedData)}`);
+
+  const address = balancesKit.getAttributeValue(
+    decodedData,
+    BALANCE_FIELDS[event.type as keyof typeof BALANCE_FIELDS]
   );
+
+  const transactionAmount = balancesKit.getAttributeValue(
+    decodedData,
+    BALANCE_FIELDS.amount
+  );
+
+  if (!address) {
+    logger.error('Address is missing or invalid.');
+    return;
+  }
+
+  if (!transactionAmount || !balancesKit.isBLDTransaction(transactionAmount)) {
+    logger.error(`Amount ${transactionAmount} invalid.`);
+    return;
+  }
+
+  const entryExists = await balancesKit.addressExists(address);
+
+  if (!entryExists) {
+    await balancesKit.createBalancesEntry(address);
+  }
+
+  const amount = BigInt(Math.round(Number(transactionAmount.slice(0, -4))));
+  await balancesKit.updateBalance(address, amount, operation);
 }

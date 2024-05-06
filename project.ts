@@ -21,7 +21,9 @@ const project: CosmosProject = {
   },
   network: {
     // chainId: "agoriclocal",
-    // endpoint: ["http://host.docker.internal:26657/"],
+    // endpoint: ["http://agoric-subql_agd_1:26657/"],
+    // chainId: "agoric-emerynet-8",
+    // endpoint: ["https://emerynet.rpc.agoric.net:443"],
     chainId: "agoric-3",
     endpoint: ["https://main-a.rpc.agoric.net:443"],
 
@@ -107,11 +109,76 @@ const project: CosmosProject = {
               type: "state_change",
             },
           },
+          // Bank Events
           {
-            handler: "handleTransferEvent",
+            handler: "handleBalanceEvent",
             kind: CosmosHandlerKind.Event,
             filter: {
-              type: "transfer",
+              type: "coinbase",
+            },
+          },
+          {
+            handler: "handleBalanceEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "coin_received",
+            },
+          },
+          {
+            handler: "handleBalanceEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "coin_spent",
+            },
+          },
+          {
+            handler: "handleBalanceEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "burn",
+            },
+          },
+          // {
+          //   handler: "handleTransferEvent",
+          //   kind: CosmosHandlerKind.Event,
+          //   filter: {
+          //     type: "transfer",
+          //   },
+          // },
+          // Distribution Events
+          {
+            handler: "handleBalanceEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "rewards",
+            },
+          },
+          {
+            handler: "handleBalanceEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "commission",
+            },
+          },
+          {
+            handler: "handleBalanceEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "proposer_reward",
+            },
+          },
+          {
+            handler: "handleBalanceEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "withdraw_rewards",
+            },
+          },
+          {
+            handler: "handleBalanceEvent",
+            kind: CosmosHandlerKind.Event,
+            filter: {
+              type: "withdraw_commission",
             },
           },
         ],

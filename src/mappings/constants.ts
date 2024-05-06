@@ -28,11 +28,23 @@ export const VAULT_STATES = {
   LIQUIDATED: "liquidated",
 };
 
-export const TRANSACTION_FIELDS = {
-  RECIPIENT: 'recipient',
-  SENDER: 'sender',
-  AMOUNT: 'amount'
-}
+export const BALANCE_FIELDS = {
+  amount: 'amount',
+  // Bank Events
+  coinbase: 'minter',
+  coin_received: 'receiver',
+  coin_spent: 'spender',
+  transfer_recipient: 'recipient',
+  transfer_sender: 'sender',
+  burn: "burner",
+  // Distribution Events
+  rewards: 'validator',
+  commission: 'validator',
+  proposer_reward: 'validator',
+  withdraw_rewards: 'validator',
+  withdraw_commission: 'validator',
+
+};
 
 export const VALUE_KEY = b64encode("value");
 export const STORE_KEY = b64encode("store");
