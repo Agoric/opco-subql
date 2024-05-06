@@ -123,14 +123,6 @@ const project: CosmosProject = {
               type: "state_change",
             },
           },
-          // Bank Events
-          {
-            handler: "handleBalanceEvent",
-            kind: CosmosHandlerKind.Event,
-            filter: {
-              type: "coinbase",
-            },
-          },
           {
             handler: "handleBalanceEvent",
             kind: CosmosHandlerKind.Event,
@@ -143,49 +135,6 @@ const project: CosmosProject = {
             kind: CosmosHandlerKind.Event,
             filter: {
               type: "coin_spent",
-            },
-          },
-          {
-            handler: "handleBalanceEvent",
-            kind: CosmosHandlerKind.Event,
-            filter: {
-              type: "burn",
-            },
-          },
-          // Distribution Events
-          {
-            handler: "handleBalanceEvent",
-            kind: CosmosHandlerKind.Event,
-            filter: {
-              type: "rewards",
-            },
-          },
-          {
-            handler: "handleBalanceEvent",
-            kind: CosmosHandlerKind.Event,
-            filter: {
-              type: "commission",
-            },
-          },
-          {
-            handler: "handleBalanceEvent",
-            kind: CosmosHandlerKind.Event,
-            filter: {
-              type: "proposer_reward",
-            },
-          },
-          {
-            handler: "handleBalanceEvent",
-            kind: CosmosHandlerKind.Event,
-            filter: {
-              type: "withdraw_rewards",
-            },
-          },
-          {
-            handler: "handleBalanceEvent",
-            kind: CosmosHandlerKind.Event,
-            filter: {
-              type: "withdraw_commission",
             },
           },
         ],
