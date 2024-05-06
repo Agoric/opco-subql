@@ -1,21 +1,9 @@
 import {
   StateChangeEvent,
-  IBCChannel,
+  Balance,
   IBCTransfer,
-  TransferType,
-  OraclePrice,
-  OraclePriceDaily,
-  PsmGovernance,
-  Wallet,
-  Vault,
-  VaultManagerMetrics,
-  VaultManagerGovernance,
-  ReserveMetrics,
-  ReserveAllocationMetrics,
-  BoardAux,
-  VaultManagerMetricsDaily,
-  ReserveAllocationMetricsDaily,
-  Balances,
+  IBCChannel,
+  TransferType
 } from "../types";
 import { CosmosBlock, CosmosEvent } from "@subql/types-cosmos";
 import {
@@ -41,7 +29,7 @@ import {
   PACKET_DST_PORT_KEY,
   PACKET_SRC_PORT_KEY,
   TRANSFER_PORT_VALUE,
-  BALANCE_FIELDS
+  BALANCE_FIELDS,
 } from "./constants";
 import { psmEventKit } from "./events/psm";
 import { boardAuxEventKit } from "./events/boardAux";
@@ -340,7 +328,7 @@ export async function initiateBalancesTable(block: CosmosBlock): Promise<void> {
     for (let element of data.balances) {
       let newBalance;
       for (const coin of element.coins) {
-        newBalance = new Balances(`${element.address}-${coin.denom}`);
+        newBalance = new Balance(`${element.address}-${coin.denom}`, element.address);
         newBalance.address = element.address;
         newBalance.balance = BigInt(coin.amount);
         newBalance.denom = coin.denom;

@@ -1,4 +1,4 @@
-import { Balances } from '../../types';
+import { Account, Balance } from '../../types';
 import { BALANCE_FIELDS } from '../constants';
 import { b64decode } from '../utils';
 import { CosmosEvent } from '@subql/types-cosmos';
@@ -72,7 +72,7 @@ export const balancesEventKit = () => {
     address: string,
     denom: string
   ): Promise<boolean> {
-    const balance = await Balances.getByFields([
+    const balance = await Balance.getByFields([
       ['address', '=', address],
       ['denom', '=', denom],
     ]);
@@ -88,14 +88,23 @@ export const balancesEventKit = () => {
     denom: string,
     primaryKey: string
   ) {
-    const newBalance = new Balances(primaryKey);
+    const newBalance = new Balance(primaryKey, address);
     newBalance.address = address;
     newBalance.balance = BigInt(0);
     newBalance.denom = denom;
-
     await newBalance.save();
 
+    await createAccountIfNotExists(address);
+
     logger.info(`Created new entry for address: ${address}`);
+  }
+
+  async function createAccountIfNotExists(address: string): Promise<void> {
+    const account = await Account.get(address);
+    if (!account) {
+      const newAccount = new Account(address);
+      await newAccount.save();
+    }
   }
 
   function validateTransaction(amount: string | null): TransactionData {
@@ -127,7 +136,7 @@ export const balancesEventKit = () => {
     amount: bigint,
     operation: Operation
   ): Promise<void> {
-    const balances = await Balances.getByFields([
+    const balances = await Balance.getByFields([
       ['address', '=', address],
       ['denom', '=', denom],
     ]);

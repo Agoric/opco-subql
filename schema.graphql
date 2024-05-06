@@ -269,9 +269,15 @@ type IBCTransfer @entity {
   transferType: TransferType!
 }
 
-type Balances @entity {
+type Balance @entity {
   id: ID!
   address: String @index
   balance: BigInt
   denom: String  @index
+  account: Account!
+}
+
+type Account @entity {
+  id: ID!
+  balances: [Balance] @derivedFrom(field: "account")
 }
