@@ -322,9 +322,7 @@ export async function handleBalanceEvent(
 
 export async function initiateBalancesTable(block: CosmosBlock): Promise<void> {
   try {
-    const data =
-      process.env.network === 'main' ? mainnetGenesisData : localGenesisData;
-
+    const data = mainnetGenesisData;
     for (let element of data.balances) {
       let newBalance;
       for (const coin of element.coins) {

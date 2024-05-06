@@ -242,10 +242,6 @@ type ReserveMetrics @entity {
   allocations: [ReserveAllocationMetrics] @derivedFrom(field: "reserveMetrics")
 }
 
-type Account @entity {
-  id: ID!
-}
-
 type IBCChannel @entity {
   id: ID!
   channelName: String!
