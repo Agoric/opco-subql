@@ -1,6 +1,14 @@
-import { VaultManagerMetrics, VaultManagerMetricsDaily, VaultManagerGovernance, Wallet, Vault } from "../../types";
-import { VAULT_STATES } from "../constants";
-import { dateToDayKey, extractBrand } from "../utils";
+import { P } from 'pino';
+import {
+  VaultManagerMetrics,
+  VaultManagerMetricsDaily,
+  VaultManagerGovernance,
+  Wallet,
+  Vault,
+  VaultLiquidation,
+} from '../../types';
+import { VAULT_STATES } from '../constants';
+import { dateToDayKey, extractBrand } from '../utils';
 
 export const vaultsEventKit = (block: any, data: any, module: string, path: string) => {
   async function saveVaultManagerGovernance(payload: any): Promise<Promise<any>[]> {
@@ -18,7 +26,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       BigInt(payload.current.LiquidationPenalty.value?.denominator.__value ?? 0),
       BigInt(payload.current.LiquidationPenalty.value?.numerator.__value ?? 0),
       BigInt(payload.current.MintFee.value?.denominator.__value ?? 0),
-      BigInt(payload.current.MintFee.value?.numerator.__value ?? 0)
+      BigInt(payload.current.MintFee.value?.numerator.__value ?? 0),
     ).save();
 
     return [vaultManagerGovernance];
@@ -26,7 +34,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
 
   async function saveWallets(payload: any): Promise<Promise<any>[]> {
     const promises: Promise<void>[] = [];
-    const address = path.split(".")[2];
+    const address = path.split('.')[2];
     const wallet = new Wallet(path, BigInt(data.blockHeight), block.block.header.time as any, address);
 
     if (payload.offerToPublicSubscriberPaths) {
@@ -48,7 +56,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
   async function saveVaults(payload: any): Promise<Promise<any>[]> {
     let vault = await Vault.get(path);
     if (!vault) {
-      vault = new Vault(path, BigInt(data.blockHeight), block.block.header.time as any, "");
+      vault = new Vault(path, BigInt(data.blockHeight), block.block.header.time as any, '');
     }
 
     vault.coin = payload?.locked?.__brand;
@@ -58,15 +66,36 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     vault.lockedValue = payload?.locked?.__value;
     vault.state = payload?.vaultState;
 
-    if (vault.state === VAULT_STATES.LIQUIDATING && !vault.liquidatingAt) {
-      vault.liquidatingAt = block.block.header.time;
+    let liquidation: Promise<any> = Promise.resolve();
+    if (vault.state === VAULT_STATES.LIQUIDATING || vault.state === VAULT_STATES.LIQUIDATED) {
+      liquidation = await saveVaultsLiquidation(payload);
     }
 
-    if (vault.state === VAULT_STATES.LIQUIDATED && !vault.liquidatedAt) {
-      vault.liquidatedAt = block.block.header.time;
-      vault.liquidated = true;
+    return [liquidation, vault.save()];
+  }
+
+  async function saveVaultsLiquidation(payload: any): Promise<any> {
+    const id = `${path}-${payload?.vaultState}`;
+    const liquidatingId = `${path}-${VAULT_STATES.LIQUIDATING}`;
+    let vault = await VaultLiquidation.get(id);
+    if (!vault) {
+      vault = new VaultLiquidation(
+        id,
+        BigInt(data.blockHeight),
+        block.block.header.time as any,
+        '',
+        path,
+        liquidatingId,
+      );
     }
-    return [vault.save()];
+
+    vault.coin = payload?.locked?.__brand;
+    vault.denom = payload?.locked?.__brand;
+    vault.debt = payload?.debtSnapshot?.debt?.__value;
+    vault.balance = payload?.locked?.__value;
+    vault.lockedValue = payload?.locked?.__value;
+    vault.state = payload?.vaultState;
+    return vault.save();
   }
 
   async function saveVaultManagerMetrics(payload: any): Promise<Promise<any>[]> {
@@ -92,7 +121,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       BigInt(payload.totalDebt.__value),
       BigInt(payload.totalOverageReceived.__value),
       BigInt(payload.totalProceedsReceived.__value),
-      BigInt(payload.totalShortfallReceived.__value)
+      BigInt(payload.totalShortfallReceived.__value),
     );
     return [vaultManagerMetric.save()];
   }

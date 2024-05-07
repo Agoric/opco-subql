@@ -130,16 +130,28 @@ type Vault @entity {
   id: ID!
   blockHeight: BigInt!
   blockTime: Date!
-  balance: BigInt
+  balance: BigInt # use lockedValue instead
   lockedValue: BigInt
   coin: String @index # use denom instead
   denom: String @index
   debt: BigInt
   state: String
   wallet: Wallet!
-  liquidatingAt: Date
-  liquidatedAt: Date
-  liquidated: Boolean
+}
+
+type VaultLiquidation @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  balance: BigInt # use lockedValue instead
+  lockedValue: BigInt
+  coin: String @index # use denom instead
+  denom: String @index
+  debt: BigInt
+  state: String
+  wallet: Wallet!
+  currentState: Vault!
+  liquidatingState: VaultLiquidation!
 }
 
 type VaultManagerMetrics @entity {
