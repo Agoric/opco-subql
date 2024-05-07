@@ -80,26 +80,26 @@ const project: CosmosProject = {
           //     },
           //   },
           // },
-          {
-            handler: "handleIbcSendPacketEvent",
-            kind: CosmosHandlerKind.Event,
-            filter: {
-              type: "send_packet",
-              messageFilter: {
-                type: "/ibc.applications.transfer.v1.MsgTransfer",
-              },
-            },
-          },
-          {
-            handler: "handleIbcReceivePacketEvent",
-            kind: CosmosHandlerKind.Event,
-            filter: {
-              type: "recv_packet",
-              messageFilter: {
-                type: "/ibc.core.channel.v1.MsgRecvPacket",
-              },
-            },
-          },
+          // {
+          //   handler: "handleIbcSendPacketEvent",
+          //   kind: CosmosHandlerKind.Event,
+          //   filter: {
+          //     type: "send_packet",
+          //     messageFilter: {
+          //       type: "/ibc.applications.transfer.v1.MsgTransfer",
+          //     },
+          //   },
+          // },
+          // {
+          //   handler: "handleIbcReceivePacketEvent",
+          //   kind: CosmosHandlerKind.Event,
+          //   filter: {
+          //     type: "recv_packet",
+          //     messageFilter: {
+          //       type: "/ibc.core.channel.v1.MsgRecvPacket",
+          //     },
+          //   },
+          // },
           {
             handler: "handleStateChangeEvent",
             kind: CosmosHandlerKind.Event,
