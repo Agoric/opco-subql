@@ -1,4 +1,4 @@
-import { BoardAux } from "../../types";
+import { BoardAux } from '../../types';
 
 export const boardAuxEventKit = (block: any, data: any, module: string, path: string) => {
   async function saveBoardAux(payload: any): Promise<Promise<any>[]> {
@@ -8,7 +8,7 @@ export const boardAuxEventKit = (block: any, data: any, module: string, path: st
       block.block.header.time as any,
       payload.allegedName,
       payload.displayInfo.assetKind,
-      payload.displayInfo.decimalPlaces ?? 0
+      payload.displayInfo.decimalPlaces ?? 0,
     ).save();
 
     return [boardAux];

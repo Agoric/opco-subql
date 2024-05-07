@@ -1,5 +1,5 @@
-import { OraclePrice, OraclePriceDaily } from "../../types";
-import { dateToDayKey } from "../utils";
+import { OraclePrice, OraclePriceDaily } from '../../types';
+import { dateToDayKey } from '../utils';
 
 export const priceFeedEventKit = (block: any, data: any, module: string, path: string) => {
   async function savePriceFeed(payload: any): Promise<Promise<any>[]> {
@@ -22,7 +22,7 @@ export const priceFeedEventKit = (block: any, data: any, module: string, path: s
         BigInt(payload.amountIn.__value),
         BigInt(payload.amountOut.__value),
         typeInName,
-        typeOutName
+        typeOutName,
       ).save();
 
       return [oraclePrice, oraclePriceDaily];
@@ -49,15 +49,10 @@ export const priceFeedEventKit = (block: any, data: any, module: string, path: s
   }
 
   async function getOraclePriceDaily(feedName: string, dateKey: number): Promise<OraclePriceDaily> {
-    const id = feedName + ":" + dateKey.toString();
+    const id = feedName + ':' + dateKey.toString();
     let state = await OraclePriceDaily.get(id);
     if (!state) {
-      state = new OraclePriceDaily(
-        id,
-        dateKey,
-        BigInt(data.blockHeight),
-        new Date(block.block.header.time as any)
-      );
+      state = new OraclePriceDaily(id, dateKey, BigInt(data.blockHeight), new Date(block.block.header.time as any));
     }
     return state;
   }

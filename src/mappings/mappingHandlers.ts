@@ -1,17 +1,12 @@
-import {
-  StateChangeEvent,
-  IBCChannel,
-  IBCTransfer,
-  TransferType,
-} from "../types";
-import { CosmosEvent } from "@subql/types-cosmos";
+import { StateChangeEvent, IBCChannel, IBCTransfer, TransferType } from '../types';
+import { CosmosEvent } from '@subql/types-cosmos';
 import {
   b64decode,
   extractStoragePath,
   getStateChangeModule,
   resolveBrandNamesAndValues,
   getEscrowAddress,
-} from "./utils";
+} from './utils';
 
 import {
   EVENT_TYPES,
@@ -28,12 +23,12 @@ import {
   PACKET_DST_PORT_KEY,
   PACKET_SRC_PORT_KEY,
   TRANSFER_PORT_VALUE,
-} from "./constants";
-import { psmEventKit } from "./events/psm";
-import { boardAuxEventKit } from "./events/boardAux";
-import { priceFeedEventKit } from "./events/priceFeed";
-import { vaultsEventKit } from "./events/vaults";
-import { reservesEventKit } from "./events/reserves";
+} from './constants';
+import { psmEventKit } from './events/psm';
+import { boardAuxEventKit } from './events/boardAux';
+import { priceFeedEventKit } from './events/priceFeed';
+import { vaultsEventKit } from './events/vaults';
+import { reservesEventKit } from './events/reserves';
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -44,36 +39,36 @@ async function saveIbcChannel(channelName: string) {
   const generatedEscrowAddress = getEscrowAddress(TRANSFER_PORT_VALUE, channelName);
 
   const channelRecord = new IBCChannel(channelName, channelName, generatedEscrowAddress);
-  await channelRecord.save();
+  return channelRecord.save();
 }
 
 export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block, tx } = cosmosEvent;
   if (event.type != EVENT_TYPES.SEND_PACKET) {
-    logger.warn("Not valid send_packet event.");
+    logger.warn('Not valid send_packet event.');
     return;
   }
 
   const packetSrcPortAttr = event.attributes.find((a) => a.key === PACKET_SRC_PORT_KEY);
   if (!packetSrcPortAttr || packetSrcPortAttr.value !== TRANSFER_PORT_VALUE) {
-    logger.warn("packet_src_port is not transfer");
+    logger.warn('packet_src_port is not transfer');
     return;
   }
   const packetDataAttr = event.attributes.find((a) => a.key === PACKET_DATA_KEY);
   if (!packetDataAttr) {
-    logger.warn("No packet data attribute found");
+    logger.warn('No packet data attribute found');
     return;
   }
 
   const packetSrcChannelAttr = event.attributes.find((a) => a.key === PACKET_SRC_CHANNEL_KEY);
   if (!packetSrcChannelAttr) {
-    logger.warn("No packet source channel found");
+    logger.warn('No packet source channel found');
     return;
   }
   const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
   const sourceChannel = packetSrcChannelAttr.value;
 
-  await saveIbcChannel(sourceChannel);
+  const ibcChannel = saveIbcChannel(sourceChannel);
 
   const transferRecord = new IBCTransfer(
     tx.hash,
@@ -86,37 +81,37 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
     amount,
     TransferType.SEND,
   );
-  await transferRecord.save();
+  await Promise.allSettled([transferRecord.save(), ibcChannel]);
 }
 
 export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block, tx } = cosmosEvent;
   if (event.type != EVENT_TYPES.RECEIVE_PACKET) {
-    logger.warn("Not valid recv_packet event.");
+    logger.warn('Not valid recv_packet event.');
     return;
   }
 
   const packetDataAttr = event.attributes.find((a) => a.key === PACKET_DATA_KEY);
   if (!packetDataAttr) {
-    logger.warn("No packet data attribute found");
+    logger.warn('No packet data attribute found');
     return;
   }
 
   const packetDestPortAttr = event.attributes.find((a) => a.key === PACKET_DST_PORT_KEY);
   if (!packetDestPortAttr || packetDestPortAttr.value !== TRANSFER_PORT_VALUE) {
-    logger.warn("packet_dest_port is not transfer");
+    logger.warn('packet_dest_port is not transfer');
     return;
   }
 
   const packetDstChannelAttr = event.attributes.find((a) => a.key === PACKET_DST_CHANNEL_KEY);
   if (!packetDstChannelAttr) {
-    logger.warn("No packet destination channel found");
+    logger.warn('No packet destination channel found');
     return;
   }
   const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
   const destinationChannel = packetDstChannelAttr.value;
 
-  await saveIbcChannel(destinationChannel);
+  const ibcChannel = saveIbcChannel(destinationChannel);
 
   const transferRecord = new IBCTransfer(
     tx.hash,
@@ -129,14 +124,15 @@ export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Pro
     amount,
     TransferType.RECEIVE,
   );
-  await transferRecord.save();
+
+  await Promise.allSettled([transferRecord.save(), ibcChannel]);
 }
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block } = cosmosEvent;
 
   if (event.type != EVENT_TYPES.STATE_CHANGE) {
-    logger.warn("Not valid state_change event.");
+    logger.warn('Not valid state_change event.');
     return;
   }
 
@@ -147,13 +143,13 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   const valueAttr = event.attributes.find((a) => a.key === VALUE_KEY || a.key === UNPROVED_VALUE_KEY);
   if (!valueAttr || !valueAttr.value) {
-    logger.warn("Value attribute is missing or empty.");
+    logger.warn('Value attribute is missing or empty.');
     return;
   }
 
   const keyAttr = event.attributes.find((a) => a.key === KEY_KEY || a.key === SUBKEY_KEY);
   if (!keyAttr) {
-    logger.warn("Key attribute is missing or empty.");
+    logger.warn('Key attribute is missing or empty.');
     return;
   }
 
@@ -167,13 +163,13 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
   }
 
   if (!data.values) {
-    logger.warn("Data has not values.");
+    logger.warn('Data has not values.');
     return;
   }
 
   const decodedKey =
     keyAttr.key === SUBKEY_KEY
-      ? b64decode(b64decode(keyAttr.value)).replaceAll("\u0000", "\x00")
+      ? b64decode(b64decode(keyAttr.value)).replaceAll('\u0000', '\x00')
       : b64decode(keyAttr.value);
   const path = extractStoragePath(decodedKey);
   const module = getStateChangeModule(path);
@@ -226,7 +222,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     }
 
     const value = JSON.parse(rawValue);
-    const payload = JSON.parse(value.body.replace(/^#/, ""));
+    const payload = JSON.parse(value.body.replace(/^#/, ''));
 
     resolveBrandNamesAndValues(payload);
     try {
