@@ -139,6 +139,11 @@ type Vault @entity {
   wallet: Wallet!
 }
 
+type VaultManagerGovernanceJson @jsonField {
+  liquidationMarginDenominator: BigInt
+  liquidationMarginNumerator: BigInt
+}
+
 type VaultLiquidation @entity {
   id: ID!
   blockHeight: BigInt!
@@ -152,6 +157,7 @@ type VaultLiquidation @entity {
   wallet: Wallet!
   currentState: Vault!
   liquidatingState: VaultLiquidation!
+  vaultManagerGovernance: VaultManagerGovernanceJson
 }
 
 type VaultManagerMetrics @entity {

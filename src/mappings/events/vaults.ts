@@ -89,6 +89,16 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       );
     }
 
+    const vaultGovernanceId = id.split('.').slice(0, 4).join('.') + '.governance';
+    const vaultManagerGovernance = await VaultManagerGovernance.get(vaultGovernanceId);
+
+    if (vaultManagerGovernance && payload?.vaultState === 'liquidated' && vault.vaultManagerGovernance === undefined) {
+      vault.vaultManagerGovernance = {
+        liquidationMarginNumerator: vaultManagerGovernance?.liquidationMarginNumerator,
+        liquidationMarginDenominator: vaultManagerGovernance?.liquidationMarginDenominator,
+      };
+    }
+
     vault.coin = payload?.locked?.__brand;
     vault.denom = payload?.locked?.__brand;
     vault.debt = payload?.debtSnapshot?.debt?.__value;
