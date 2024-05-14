@@ -99,19 +99,17 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     const oraclPriceId = `${denom}-USD`;
     const oraclePrice = await OraclePrice.get(oraclPriceId);
 
-    if (payload?.vaultState === 'liquidated') {
-      if (vaultManagerGovernance && vault.vaultManagerGovernance === undefined)
-        vault.vaultManagerGovernance = {
-          liquidationMarginNumerator: vaultManagerGovernance.liquidationMarginNumerator,
-          liquidationMarginDenominator: vaultManagerGovernance.liquidationMarginDenominator,
-        };
+    if (vaultManagerGovernance && vault.vaultManagerGovernance === undefined)
+      vault.vaultManagerGovernance = {
+        liquidationMarginNumerator: vaultManagerGovernance.liquidationMarginNumerator,
+        liquidationMarginDenominator: vaultManagerGovernance.liquidationMarginDenominator,
+      };
 
-      if (oraclePrice && vault.oraclePrice === undefined)
-        vault.oraclePrice = {
-          typeInAmount: oraclePrice.typeInAmount,
-          typeOutAmount: oraclePrice.typeOutAmount,
-        };
-    }
+    if (oraclePrice && vault.oraclePrice === undefined)
+      vault.oraclePrice = {
+        typeInAmount: oraclePrice.typeInAmount,
+        typeOutAmount: oraclePrice.typeOutAmount,
+      };
 
     vault.coin = denom;
     vault.denom = denom;
