@@ -144,6 +144,11 @@ type VaultManagerGovernanceJson @jsonField {
   liquidationMarginNumerator: BigInt
 }
 
+type OraclePriceJson @jsonField {
+  typeInAmount: BigInt
+  typeOutAmount: BigInt
+}
+
 type VaultLiquidation @entity {
   id: ID!
   blockHeight: BigInt!
@@ -158,6 +163,7 @@ type VaultLiquidation @entity {
   currentState: Vault!
   liquidatingState: VaultLiquidation!
   vaultManagerGovernance: VaultManagerGovernanceJson
+  oraclePrice: OraclePriceJson
 }
 
 type VaultManagerMetrics @entity {
