@@ -93,7 +93,12 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       );
     }
 
-    const vaultGovernanceId = id.split('.').slice(0, 4).join('.') + '.governance';
+    const pathRegex = /^(published\.vaultFactory\.managers\.manager[0-9]+)\.vaults\.vault[0-9]+$/
+    const pathRegexMatch = path.match(pathRegex);
+    if (!pathRegexMatch) {
+      throw new Error('path format is invalid');
+    }
+    const vaultGovernanceId = pathRegexMatch[1] + '.governance';
     const vaultManagerGovernance = await VaultManagerGovernance.get(vaultGovernanceId);
 
     const oraclPriceId = `${denom}-USD`;
