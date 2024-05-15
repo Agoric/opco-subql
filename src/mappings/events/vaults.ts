@@ -6,6 +6,7 @@ import {
   Wallet,
   Vault,
   VaultLiquidation,
+  OraclePrice,
 } from '../../types';
 import { VAULT_STATES } from '../constants';
 import { dateToDayKey, extractBrand } from '../utils';
@@ -77,6 +78,9 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
   async function saveVaultsLiquidation(payload: any): Promise<any> {
     const id = `${path}-${payload?.vaultState}`;
     const liquidatingId = `${path}-${VAULT_STATES.LIQUIDATING}`;
+
+    const denom = payload?.locked?.__brand;
+
     let vault = await VaultLiquidation.get(id);
     if (!vault) {
       vault = new VaultLiquidation(
@@ -89,8 +93,31 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       );
     }
 
-    vault.coin = payload?.locked?.__brand;
-    vault.denom = payload?.locked?.__brand;
+    const pathRegex = /^(published\.vaultFactory\.managers\.manager[0-9]+)\.vaults\.vault[0-9]+$/
+    const pathRegexMatch = path.match(pathRegex);
+    if (!pathRegexMatch) {
+      throw new Error('path format is invalid');
+    }
+    const vaultGovernanceId = pathRegexMatch[1] + '.governance';
+    const vaultManagerGovernance = await VaultManagerGovernance.get(vaultGovernanceId);
+
+    const oraclPriceId = `${denom}-USD`;
+    const oraclePrice = await OraclePrice.get(oraclPriceId);
+
+    if (vaultManagerGovernance && vault.vaultManagerGovernance === undefined)
+      vault.vaultManagerGovernance = {
+        liquidationMarginNumerator: vaultManagerGovernance.liquidationMarginNumerator,
+        liquidationMarginDenominator: vaultManagerGovernance.liquidationMarginDenominator,
+      };
+
+    if (oraclePrice && vault.oraclePrice === undefined)
+      vault.oraclePrice = {
+        typeInAmount: oraclePrice.typeInAmount,
+        typeOutAmount: oraclePrice.typeOutAmount,
+      };
+
+    vault.coin = denom;
+    vault.denom = denom;
     vault.debt = payload?.debtSnapshot?.debt?.__value;
     vault.balance = payload?.locked?.__value;
     vault.lockedValue = payload?.locked?.__value;
