@@ -1,4 +1,3 @@
-import { P } from 'pino';
 import {
   VaultManagerMetrics,
   VaultManagerMetricsDaily,
@@ -6,6 +5,7 @@ import {
   Wallet,
   Vault,
   VaultLiquidation,
+  VaultStatesDaily,
   OraclePrice,
 } from '../../types';
 import { VAULT_STATES } from '../constants';
@@ -54,8 +54,84 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     return promises;
   }
 
+  async function updateDailyVaultState(
+    oldState: string | undefined,
+    newState: string,
+    blockTime: Date,
+    blockHeight: number,
+  ): Promise<VaultStatesDaily> {
+    const dateKey = dateToDayKey(blockTime).toString();
+    let vaultState: VaultStatesDaily | undefined = await VaultStatesDaily.get(dateKey);
+
+    if (!vaultState) {
+      const yesterdayDate = new Date(blockTime);
+      yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+      const yesterdayDateKey = dateToDayKey(yesterdayDate).toString();
+      const yesterdayVaultState: VaultStatesDaily | undefined = await VaultStatesDaily.get(yesterdayDateKey);
+
+      if (yesterdayVaultState) {
+        vaultState = new VaultStatesDaily(
+          dateKey,
+          BigInt(blockHeight),
+          blockTime,
+          yesterdayVaultState.active,
+          yesterdayVaultState.closed,
+          yesterdayVaultState.liquidating,
+          yesterdayVaultState.liquidated,
+          yesterdayVaultState.liquidatedClosed,
+        );
+      } else {
+        vaultState = new VaultStatesDaily(
+          dateKey,
+          BigInt(blockHeight),
+          blockTime,
+          BigInt(0),
+          BigInt(0),
+          BigInt(0),
+          BigInt(0),
+          BigInt(0),
+        );
+      }
+    }
+
+    const propertyMap = {
+      [VAULT_STATES.ACTIVE]: 'active',
+      [VAULT_STATES.LIQUIDATED]: 'liquidated',
+      [VAULT_STATES.LIQUIDATING]: 'liquidating',
+      [VAULT_STATES.CLOSED]: 'closed',
+    };
+
+    const closedPropertyMap = {
+      [VAULT_STATES.ACTIVE]: 'closed',
+      [VAULT_STATES.LIQUIDATED]: 'liquidatedClosed',
+    };
+
+    if (oldState) {
+      const oldProperty = propertyMap[oldState];
+      if ((vaultState as any)[oldProperty] === BigInt(0)) {
+        throw Error(oldState + ' vaults are 0. cannot subtract more');
+      }
+      (vaultState as any)[oldProperty] -= BigInt(1);
+    }
+
+    const newProperty =
+      newState === VAULT_STATES.CLOSED && oldState ? closedPropertyMap[oldState] : propertyMap[newState];
+    (vaultState as any)[newProperty] += BigInt(1);
+
+    vaultState.blockHeightLast = BigInt(blockHeight);
+    vaultState.blockTimeLast = blockTime;
+
+    return vaultState;
+  }
+
   async function saveVaults(payload: any): Promise<Promise<any>[]> {
     let vault = await Vault.get(path);
+    const dailyVaultState = await updateDailyVaultState(
+      vault?.state,
+      payload?.vaultState,
+      block.block.header.time,
+      data.blockHeight,
+    );
     if (!vault) {
       vault = new Vault(path, BigInt(data.blockHeight), block.block.header.time as any, '');
     }
@@ -72,7 +148,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       liquidation = await saveVaultsLiquidation(payload);
     }
 
-    return [liquidation, vault.save()];
+    return [liquidation, vault.save(), dailyVaultState.save()];
   }
 
   async function saveVaultsLiquidation(payload: any): Promise<any> {
