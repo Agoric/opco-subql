@@ -280,3 +280,14 @@ type IBCTransfer @entity {
   amount: String!
   transferType: TransferType!
 }
+
+type VaultStatesDaily @entity {
+  id: ID!
+  blockHeightLast: BigInt!
+  blockTimeLast: Date!
+  active: BigInt!
+  closed: BigInt!
+  liquidating: BigInt!
+  liquidated: BigInt!
+  liquidatedClosed: BigInt!
+}
