@@ -54,7 +54,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     return promises;
   }
 
-  async function updateDailyVaultState(
+  async function updateVaultStatesDaily(
     oldState: string | undefined,
     newState: string,
     blockTime: Date,
@@ -106,7 +106,10 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       [VAULT_STATES.LIQUIDATED]: 'liquidatedClosed',
     };
 
-    if (oldState) {
+    vaultState.blockHeightLast = BigInt(blockHeight);
+    vaultState.blockTimeLast = blockTime;
+
+    if (oldState && propertyMap[oldState]) {
       const oldProperty = propertyMap[oldState];
       if ((vaultState as any)[oldProperty] === BigInt(0)) {
         throw Error(oldState + ' vaults are 0. cannot subtract more');
@@ -114,19 +117,18 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       (vaultState as any)[oldProperty] -= BigInt(1);
     }
 
-    const newProperty =
-      newState === VAULT_STATES.CLOSED && oldState ? closedPropertyMap[oldState] : propertyMap[newState];
-    (vaultState as any)[newProperty] += BigInt(1);
-
-    vaultState.blockHeightLast = BigInt(blockHeight);
-    vaultState.blockTimeLast = blockTime;
+    if ((newState && propertyMap[newState]) || (oldState && closedPropertyMap[oldState])) {
+      const newProperty =
+        newState === VAULT_STATES.CLOSED && oldState ? closedPropertyMap[oldState] : propertyMap[newState];
+      (vaultState as any)[newProperty] += BigInt(1);
+    }
 
     return vaultState;
   }
 
   async function saveVaults(payload: any): Promise<Promise<any>[]> {
     let vault = await Vault.get(path);
-    const dailyVaultState = await updateDailyVaultState(
+    const dailyVaultState = await updateVaultStatesDaily(
       vault?.state,
       payload?.vaultState,
       block.block.header.time,
