@@ -99,11 +99,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       [VAULT_STATES.LIQUIDATED]: 'liquidated',
       [VAULT_STATES.LIQUIDATING]: 'liquidating',
       [VAULT_STATES.CLOSED]: 'closed',
-    };
-
-    const closedPropertyMap = {
-      [VAULT_STATES.ACTIVE]: 'closed',
-      [VAULT_STATES.LIQUIDATED]: 'liquidatedClosed',
+      [VAULT_STATES.LIQUIDATED_CLOSED]: 'liquidatedClosed',
     };
 
     vaultState.blockHeightLast = BigInt(blockHeight);
@@ -117,9 +113,8 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       (vaultState as any)[oldProperty] -= BigInt(1);
     }
 
-    if ((newState && propertyMap[newState]) || (oldState && closedPropertyMap[oldState])) {
-      const newProperty =
-        newState === VAULT_STATES.CLOSED && oldState ? closedPropertyMap[oldState] : propertyMap[newState];
+    if ((newState && propertyMap[newState])) {
+      const newProperty = propertyMap[newState];
       (vaultState as any)[newProperty] += BigInt(1);
     }
 

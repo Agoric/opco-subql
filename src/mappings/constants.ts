@@ -28,6 +28,7 @@ export const VAULT_STATES = {
   CLOSED: 'closed',
   LIQUIDATING: 'liquidating',
   LIQUIDATED: 'liquidated',
+  LIQUIDATED_CLOSED: 'liquidatedClosed',
 };
 
 export const VALUE_KEY = b64encode('value');
