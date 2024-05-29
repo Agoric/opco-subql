@@ -130,16 +130,40 @@ type Vault @entity {
   id: ID!
   blockHeight: BigInt!
   blockTime: Date!
-  balance: BigInt
+  balance: BigInt # use lockedValue instead
   lockedValue: BigInt
   coin: String @index # use denom instead
   denom: String @index
   debt: BigInt
   state: String
   wallet: Wallet!
-  liquidatingAt: Date
-  liquidatedAt: Date
-  liquidated: Boolean
+}
+
+type VaultManagerGovernanceJson @jsonField {
+  liquidationMarginDenominator: BigInt
+  liquidationMarginNumerator: BigInt
+}
+
+type OraclePriceJson @jsonField {
+  typeInAmount: BigInt
+  typeOutAmount: BigInt
+}
+
+type VaultLiquidation @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  balance: BigInt # use lockedValue instead
+  lockedValue: BigInt
+  coin: String @index # use denom instead
+  denom: String @index
+  debt: BigInt
+  state: String
+  wallet: Wallet!
+  currentState: Vault!
+  liquidatingState: VaultLiquidation!
+  vaultManagerGovernance: VaultManagerGovernanceJson
+  oraclePrice: OraclePriceJson
 }
 
 type VaultManagerMetrics @entity {
@@ -242,6 +266,10 @@ type ReserveMetrics @entity {
   allocations: [ReserveAllocationMetrics] @derivedFrom(field: "reserveMetrics")
 }
 
+type Account @entity {
+  id: ID!
+}
+
 type IBCChannel @entity {
   id: ID!
   channelName: String!
@@ -265,15 +293,13 @@ type IBCTransfer @entity {
   transferType: TransferType!
 }
 
-type Balance @entity {
+type VaultStatesDaily @entity {
   id: ID!
-  address: String @index
-  balance: BigInt
-  denom: String  @index
-  account: Account!
-}
-
-type Account @entity {
-  id: ID!
-  balances: [Balance] @derivedFrom(field: "account")
+  blockHeightLast: BigInt!
+  blockTimeLast: Date!
+  active: BigInt!
+  closed: BigInt!
+  liquidating: BigInt!
+  liquidated: BigInt!
+  liquidatedClosed: BigInt!
 }

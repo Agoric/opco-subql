@@ -1,0 +1,44 @@
+export type Balance = {
+  denom: string;
+  amount: string;
+};
+
+interface PubKey {
+  '@type': string;
+  key: string;
+}
+
+export type BaseAccount = {
+  '@type': string;
+  address: string;
+  pub_key: PubKey | null;
+  account_number: string;
+  sequence: string;
+};
+
+export type ModuleAccount = {
+  '@type': string;
+  base_account: {
+    address: string;
+    pub_key: PubKey | null;
+    account_number: string;
+    sequence: string;
+  };
+  name: string;
+  permissions: string[];
+};
+
+type Pagination = {
+  next_key: string | null;
+  total: string;
+};
+
+export type BalancesResponse = {
+  balances: Balance[];
+  pagination: Pagination;
+};
+
+export type AccountsResponse = {
+  accounts: (BaseAccount | ModuleAccount)[];
+  pagination: Pagination;
+};

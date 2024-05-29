@@ -1,5 +1,6 @@
 import { bech32 } from "bech32";
 import sha256 from "js-sha256";
+import { BaseAccount, ModuleAccount } from "./custom-types";
 
 export function extractBrand(str: string): string {
   return str.replace("Alleged: ", "").replace(" brand", "");
@@ -107,4 +108,12 @@ export const getEscrowAddress = (port: string, channel: string) => {
   const bechWords = bech32.toWords(shaHash.slice(0, 20));
   const address = bech32.encode(chainPrefix, bechWords);
   return address;
+};
+
+export const isBaseAccount = (account: any): account is BaseAccount => {
+  return account['@type'] === '/cosmos.auth.v1beta1.BaseAccount';
+};
+
+export const isModuleAccount = (account: any): account is ModuleAccount => {
+  return account['@type'] === '/cosmos.auth.v1beta1.ModuleAccount';
 };

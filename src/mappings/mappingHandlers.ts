@@ -1,18 +1,14 @@
-import {
-  StateChangeEvent,
-  Balance,
-  IBCTransfer,
-  IBCChannel,
-  TransferType
-} from "../types";
-import { CosmosBlock, CosmosEvent } from "@subql/types-cosmos";
+import { StateChangeEvent, IBCChannel, IBCTransfer, TransferType, Balances } from '../types';
+import { CosmosBlock, CosmosEvent } from '@subql/types-cosmos';
 import {
   b64decode,
   extractStoragePath,
   getStateChangeModule,
   resolveBrandNamesAndValues,
   getEscrowAddress,
-} from "./utils";
+  isBaseAccount,
+  isModuleAccount,
+} from './utils';
 
 import {
   EVENT_TYPES,
@@ -30,15 +26,24 @@ import {
   PACKET_SRC_PORT_KEY,
   TRANSFER_PORT_VALUE,
   BALANCE_FIELDS,
-} from "./constants";
-import { psmEventKit } from "./events/psm";
-import { boardAuxEventKit } from "./events/boardAux";
-import { priceFeedEventKit } from "./events/priceFeed";
-import { vaultsEventKit } from "./events/vaults";
-import { reservesEventKit } from "./events/reserves";
-import { DecodedEvent, Operation, balancesEventKit } from "./events/balances";
-import localGenesisData from "../../genesis-local.json";
-import mainnetGenesisData from "../../genesis-main.json";
+  FETCH_ACCOUNTS_URL,
+  GET_FETCH_BALANCE_URL,
+} from './constants';
+import { psmEventKit } from './events/psm';
+import { boardAuxEventKit } from './events/boardAux';
+import { priceFeedEventKit } from './events/priceFeed';
+import { vaultsEventKit } from './events/vaults';
+import { reservesEventKit } from './events/reserves';
+import {
+  AccountsResponse,
+  BaseAccount,
+  ModuleAccount,
+  BalancesResponse,
+  Balance,
+} from './custom-types';
+import { Operation, balancesEventKit } from './events/balances';
+import axios from 'axios';
+
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -48,36 +53,36 @@ async function saveIbcChannel(channelName: string) {
   const generatedEscrowAddress = getEscrowAddress(TRANSFER_PORT_VALUE, channelName);
 
   const channelRecord = new IBCChannel(channelName, channelName, generatedEscrowAddress);
-  await channelRecord.save();
+  return channelRecord.save();
 }
 
 export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block, tx } = cosmosEvent;
   if (event.type != EVENT_TYPES.SEND_PACKET) {
-    logger.warn("Not valid send_packet event.");
+    logger.warn('Not valid send_packet event.');
     return;
   }
 
   const packetSrcPortAttr = event.attributes.find((a) => a.key === PACKET_SRC_PORT_KEY);
   if (!packetSrcPortAttr || packetSrcPortAttr.value !== TRANSFER_PORT_VALUE) {
-    logger.warn("packet_src_port is not transfer");
+    logger.warn('packet_src_port is not transfer');
     return;
   }
   const packetDataAttr = event.attributes.find((a) => a.key === PACKET_DATA_KEY);
   if (!packetDataAttr) {
-    logger.warn("No packet data attribute found");
+    logger.warn('No packet data attribute found');
     return;
   }
 
   const packetSrcChannelAttr = event.attributes.find((a) => a.key === PACKET_SRC_CHANNEL_KEY);
   if (!packetSrcChannelAttr) {
-    logger.warn("No packet source channel found");
+    logger.warn('No packet source channel found');
     return;
   }
   const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
   const sourceChannel = packetSrcChannelAttr.value;
 
-  await saveIbcChannel(sourceChannel);
+  const ibcChannel = saveIbcChannel(sourceChannel);
 
   const transferRecord = new IBCTransfer(
     tx.hash,
@@ -90,37 +95,37 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
     amount,
     TransferType.SEND,
   );
-  await transferRecord.save();
+  await Promise.allSettled([transferRecord.save(), ibcChannel]);
 }
 
 export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block, tx } = cosmosEvent;
   if (event.type != EVENT_TYPES.RECEIVE_PACKET) {
-    logger.warn("Not valid recv_packet event.");
+    logger.warn('Not valid recv_packet event.');
     return;
   }
 
   const packetDataAttr = event.attributes.find((a) => a.key === PACKET_DATA_KEY);
   if (!packetDataAttr) {
-    logger.warn("No packet data attribute found");
+    logger.warn('No packet data attribute found');
     return;
   }
 
   const packetDestPortAttr = event.attributes.find((a) => a.key === PACKET_DST_PORT_KEY);
   if (!packetDestPortAttr || packetDestPortAttr.value !== TRANSFER_PORT_VALUE) {
-    logger.warn("packet_dest_port is not transfer");
+    logger.warn('packet_dest_port is not transfer');
     return;
   }
 
   const packetDstChannelAttr = event.attributes.find((a) => a.key === PACKET_DST_CHANNEL_KEY);
   if (!packetDstChannelAttr) {
-    logger.warn("No packet destination channel found");
+    logger.warn('No packet destination channel found');
     return;
   }
   const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
   const destinationChannel = packetDstChannelAttr.value;
 
-  await saveIbcChannel(destinationChannel);
+  const ibcChannel = saveIbcChannel(destinationChannel);
 
   const transferRecord = new IBCTransfer(
     tx.hash,
@@ -133,14 +138,15 @@ export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Pro
     amount,
     TransferType.RECEIVE,
   );
-  await transferRecord.save();
+
+  await Promise.allSettled([transferRecord.save(), ibcChannel]);
 }
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block } = cosmosEvent;
 
   if (event.type != EVENT_TYPES.STATE_CHANGE) {
-    logger.warn("Not valid state_change event.");
+    logger.warn('Not valid state_change event.');
     return;
   }
 
@@ -151,13 +157,13 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   const valueAttr = event.attributes.find((a) => a.key === VALUE_KEY || a.key === UNPROVED_VALUE_KEY);
   if (!valueAttr || !valueAttr.value) {
-    logger.warn("Value attribute is missing or empty.");
+    logger.warn('Value attribute is missing or empty.');
     return;
   }
 
   const keyAttr = event.attributes.find((a) => a.key === KEY_KEY || a.key === SUBKEY_KEY);
   if (!keyAttr) {
-    logger.warn("Key attribute is missing or empty.");
+    logger.warn('Key attribute is missing or empty.');
     return;
   }
 
@@ -171,13 +177,13 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
   }
 
   if (!data.values) {
-    logger.warn("Data has not values.");
+    logger.warn('Data has not values.');
     return;
   }
 
   const decodedKey =
     keyAttr.key === SUBKEY_KEY
-      ? b64decode(b64decode(keyAttr.value)).replaceAll("\u0000", "\x00")
+      ? b64decode(b64decode(keyAttr.value)).replaceAll('\u0000', '\x00')
       : b64decode(keyAttr.value);
   const path = extractStoragePath(decodedKey);
   const module = getStateChangeModule(path);
@@ -230,7 +236,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     }
 
     const value = JSON.parse(rawValue);
-    const payload = JSON.parse(value.body.replace(/^#/, ""));
+    const payload = JSON.parse(value.body.replace(/^#/, ''));
 
     resolveBrandNamesAndValues(payload);
     try {
@@ -250,20 +256,14 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   await Promise.allSettled(recordSaves);
 }
-export async function handleBalanceEvent(
+
+export const handleBalanceEvent = async (
   cosmosEvent: CosmosEvent
-): Promise<void> {
+): Promise<void> => {
   const { event } = cosmosEvent;
 
-  const incrementEventTypes = [
-    EVENT_TYPES.COMMISSION,
-    EVENT_TYPES.REWARDS,
-    EVENT_TYPES.PROPOSER_REWARD,
-    EVENT_TYPES.COIN_RECEIVED,
-    EVENT_TYPES.COINBASE,
-  ];
-
-  const decrementEventTypes = [EVENT_TYPES.COIN_SPENT, EVENT_TYPES.BURN];
+  const incrementEventTypes = [EVENT_TYPES.COIN_RECEIVED];
+  const decrementEventTypes = [EVENT_TYPES.COIN_SPENT];
 
   let operation: Operation | null = null;
 
@@ -294,7 +294,7 @@ export async function handleBalanceEvent(
   );
 
   if (!address) {
-    logger.error(`Address ${address} is missing or invalid.`);
+    logger.error('Address is missing or invalid.');
     return;
   }
 
@@ -306,37 +306,79 @@ export async function handleBalanceEvent(
     return;
   }
 
-  for (let coin of coins) {
-    const { amount, denom } = coin;
+  for (let { denom, amount } of coins) {
     const entryExists = await balancesKit.addressExists(address, denom);
 
     if (!entryExists) {
-      const primaryKey = `${address}-${denom}`;
+      const primaryKey = address + denom;
       await balancesKit.createBalancesEntry(address, denom, primaryKey);
     }
 
-    const formattedAmount = BigInt(Math.round(Number(amount)));
+    const formattedAmount = BigInt(Math.round(Number(amount.slice(0, -4))));
     await balancesKit.updateBalance(address, denom, formattedAmount, operation);
   }
-}
+};
 
-export async function initiateBalancesTable(block: CosmosBlock): Promise<void> {
+const fetchAccounts = async (): Promise<AccountsResponse | void> => {
   try {
-    const data = mainnetGenesisData;
-    for (let element of data.balances) {
-      let newBalance;
-      for (const coin of element.coins) {
-        newBalance = new Balance(`${element.address}-${coin.denom}`, element.address);
-        newBalance.address = element.address;
-        newBalance.balance = BigInt(coin.amount);
-        newBalance.denom = coin.denom;
+    const response = await axios.get(FETCH_ACCOUNTS_URL);
+    const accounts: AccountsResponse = response.data;
+    return accounts;
+  } catch (error) {
+    logger.error(`Error fetching accounts: ${error}`);
+  }
+};
 
-        await newBalance.save();
+const extractAddresses = (
+  accounts: (BaseAccount | ModuleAccount)[]
+): Array<string> => {
+  return accounts
+    .map((account) => {
+      if (isBaseAccount(account)) {
+        return account.address;
+      } else if (isModuleAccount(account)) {
+        return account.base_account.address;
+      }
+      return '';
+    })
+    .filter((address) => address !== null);
+};
+
+const fetchBalance = async (
+  address: string
+): Promise<BalancesResponse | void> => {
+  try {
+    const response = await axios.get(GET_FETCH_BALANCE_URL(address));
+    const balance: BalancesResponse = response.data;
+    return balance;
+  } catch (error) {
+    logger.error(`Error fetching balance for address ${address}: ${error}`);
+  }
+};
+
+const saveAccountBalances = async (address: string, balances: Balance[]) => {
+  for (let { denom, amount } of balances) {
+    const newBalance = new Balances(address);
+    newBalance.address = address;
+    newBalance.balance = BigInt(amount);
+    newBalance.denom = denom;
+
+    await newBalance.save();
+  }
+};
+
+export const initiateBalancesTable = async (
+  block: CosmosBlock
+): Promise<void> => {
+  const response = await fetchAccounts();
+  if (response) {
+    const accountAddresses = extractAddresses(response.accounts);
+    for (let address of accountAddresses) {
+      const response = await fetchBalance(address);
+
+      if (response) {
+        await saveAccountBalances(address, response.balances);
       }
     }
-
-    logger.info(`Balances Table Initiated`);
-  } catch (error) {
-    logger.error(`Error initiating balances table: ${error}`);
   }
-}
+};

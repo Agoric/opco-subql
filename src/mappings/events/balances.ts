@@ -1,4 +1,4 @@
-import { Account, Balance } from '../../types';
+import { Account, Balances } from '../../types';
 import { BALANCE_FIELDS } from '../constants';
 import { b64decode } from '../utils';
 import { CosmosEvent } from '@subql/types-cosmos';
@@ -72,7 +72,7 @@ export const balancesEventKit = () => {
     address: string,
     denom: string
   ): Promise<boolean> {
-    const balance = await Balance.getByFields([
+    const balance = await Balances.getByFields([
       ['address', '=', address],
       ['denom', '=', denom],
     ]);
@@ -88,7 +88,7 @@ export const balancesEventKit = () => {
     denom: string,
     primaryKey: string
   ) {
-    const newBalance = new Balance(primaryKey, address);
+    const newBalance = new Balances(primaryKey);
     newBalance.address = address;
     newBalance.balance = BigInt(0);
     newBalance.denom = denom;
@@ -136,7 +136,7 @@ export const balancesEventKit = () => {
     amount: bigint,
     operation: Operation
   ): Promise<void> {
-    const balances = await Balance.getByFields([
+    const balances = await Balances.getByFields([
       ['address', '=', address],
       ['denom', '=', denom],
     ]);
