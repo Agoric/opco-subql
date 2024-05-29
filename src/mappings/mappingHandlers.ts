@@ -1,11 +1,13 @@
-import { StateChangeEvent, IBCChannel, IBCTransfer, TransferType } from '../types';
-import { CosmosEvent } from '@subql/types-cosmos';
+import { StateChangeEvent, IBCChannel, IBCTransfer, TransferType, Balances } from '../types';
+import { CosmosBlock, CosmosEvent } from '@subql/types-cosmos';
 import {
   b64decode,
   extractStoragePath,
   getStateChangeModule,
   resolveBrandNamesAndValues,
   getEscrowAddress,
+  isBaseAccount,
+  isModuleAccount,
 } from './utils';
 
 import {
@@ -23,12 +25,18 @@ import {
   PACKET_DST_PORT_KEY,
   PACKET_SRC_PORT_KEY,
   TRANSFER_PORT_VALUE,
+  BALANCE_FIELDS,
+  FETCH_ACCOUNTS_URL,
+  GET_FETCH_BALANCE_URL,
 } from './constants';
 import { psmEventKit } from './events/psm';
 import { boardAuxEventKit } from './events/boardAux';
 import { priceFeedEventKit } from './events/priceFeed';
 import { vaultsEventKit } from './events/vaults';
 import { reservesEventKit } from './events/reserves';
+import { AccountsResponse, BaseAccount, ModuleAccount, BalancesResponse, Balance } from './custom-types';
+import { Operation, balancesEventKit } from './events/balances';
+import crossFetch from 'cross-fetch';
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -242,20 +250,12 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   await Promise.allSettled(recordSaves);
 }
-export async function handleBalanceEvent(
-  cosmosEvent: CosmosEvent
-): Promise<void> {
+
+export const handleBalanceEvent = async (cosmosEvent: CosmosEvent): Promise<void> => {
   const { event } = cosmosEvent;
 
-  const incrementEventTypes = [
-    EVENT_TYPES.COMMISSION,
-    EVENT_TYPES.REWARDS,
-    EVENT_TYPES.PROPOSER_REWARD,
-    EVENT_TYPES.COIN_RECEIVED,
-    EVENT_TYPES.COINBASE,
-  ];
-
-  const decrementEventTypes = [EVENT_TYPES.COIN_SPENT, EVENT_TYPES.BURN];
+  const incrementEventTypes = [EVENT_TYPES.COIN_RECEIVED];
+  const decrementEventTypes = [EVENT_TYPES.COIN_SPENT];
 
   let operation: Operation | null = null;
 
@@ -275,60 +275,90 @@ export async function handleBalanceEvent(
   const data = balancesKit.getData(cosmosEvent);
   logger.info(`Decoded Data:${JSON.stringify(data)}`);
 
-  const address = balancesKit.getAttributeValue(
-    data,
-    BALANCE_FIELDS[event.type as keyof typeof BALANCE_FIELDS]
-  );
+  const address = balancesKit.getAttributeValue(data, BALANCE_FIELDS[event.type as keyof typeof BALANCE_FIELDS]);
 
-  const transactionAmount = balancesKit.getAttributeValue(
-    data,
-    BALANCE_FIELDS.amount
-  );
+  const transactionAmount = balancesKit.getAttributeValue(data, BALANCE_FIELDS.amount);
 
   if (!address) {
-    logger.error(`Address ${address} is missing or invalid.`);
+    logger.error('Address is missing or invalid.');
     return;
   }
 
-  const { isValidTransaction, coins } =
-    balancesKit.validateTransaction(transactionAmount);
+  const { isValidTransaction, coins } = balancesKit.validateTransaction(transactionAmount);
 
   if (!transactionAmount || !isValidTransaction) {
     logger.error(`Amount ${transactionAmount} invalid.`);
     return;
   }
 
-  for (let coin of coins) {
-    const { amount, denom } = coin;
+  for (let { denom, amount } of coins) {
     const entryExists = await balancesKit.addressExists(address, denom);
 
     if (!entryExists) {
-      const primaryKey = `${address}-${denom}`;
+      const primaryKey = address + denom;
       await balancesKit.createBalancesEntry(address, denom, primaryKey);
     }
 
-    const formattedAmount = BigInt(Math.round(Number(amount)));
+    const formattedAmount = BigInt(Math.round(Number(amount.slice(0, -4))));
     await balancesKit.updateBalance(address, denom, formattedAmount, operation);
   }
-}
+};
 
-export async function initiateBalancesTable(block: CosmosBlock): Promise<void> {
+const fetchAccounts = async (): Promise<AccountsResponse | void> => {
   try {
-    const data = mainnetGenesisData;
-    for (let element of data.balances) {
-      let newBalance;
-      for (const coin of element.coins) {
-        newBalance = new Balance(`${element.address}-${coin.denom}`, element.address);
-        newBalance.address = element.address;
-        newBalance.balance = BigInt(coin.amount);
-        newBalance.denom = coin.denom;
+    const response = await crossFetch(FETCH_ACCOUNTS_URL);
+    const accounts: AccountsResponse = await response.json();
+    return accounts;
+  } catch (error) {
+    logger.error(`Error fetching accounts: ${error}`);
+  }
+};
 
-        await newBalance.save();
+const extractAddresses = (accounts: (BaseAccount | ModuleAccount)[]): Array<string> => {
+  return accounts
+    .map((account) => {
+      if (isBaseAccount(account)) {
+        return account.address;
+      } else if (isModuleAccount(account)) {
+        return account.base_account.address;
+      }
+      return '';
+    })
+    .filter((address) => address !== null);
+};
+
+const fetchBalance = async (address: string): Promise<BalancesResponse | void> => {
+  try {
+    const response = await crossFetch(GET_FETCH_BALANCE_URL(address));
+    const balance: BalancesResponse = await response.json();
+    return balance;
+  } catch (error) {
+    logger.error(`Error fetching balance for address ${address}: ${error}`);
+  }
+};
+
+const saveAccountBalances = async (address: string, balances: Balance[]) => {
+  for (let { denom, amount } of balances) {
+    const newBalance = new Balances(address);
+    newBalance.address = address;
+    newBalance.balance = BigInt(amount);
+    newBalance.denom = denom;
+
+    await newBalance.save();
+  }
+};
+
+export const initiateBalancesTable = async (block: CosmosBlock): Promise<void> => {
+  const response = await fetchAccounts();
+
+  if (response) {
+    const accountAddresses = extractAddresses(response.accounts);
+    for (let address of accountAddresses) {
+      const response = await fetchBalance(address);
+
+      if (response) {
+        await saveAccountBalances(address, response.balances);
       }
     }
-
-    logger.info(`Balances Table Initiated`);
-  } catch (error) {
-    logger.error(`Error initiating balances table: ${error}`);
   }
-}
+};

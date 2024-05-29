@@ -8,7 +8,7 @@
     "pub": "subql publish",
     "codegen": "subql codegen",
     "start:docker": "docker-compose pull && docker-compose up --remove-orphans",
-    "dev": "network=local && subql codegen && subql build && docker-compose pull && docker-compose up --remove-orphans",
+    "dev": "subql codegen && subql build && docker-compose pull && docker-compose up --remove-orphans",
     "prepack": "rm -rf dist && npm run build",
     "test": "jest",
     "subql": "subql codegen --help",
@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@subql/types-cosmos": "^3.2.3",
+    "cross-fetch": "^4.0.0",
     "@types/node": "^17.0.21",
     "bech32": "^2.0.0",
     "js-sha256": "^0.11.0",
