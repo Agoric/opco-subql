@@ -59,39 +59,20 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     newState: string,
     blockTime: Date,
     blockHeight: number,
-  ): Promise<VaultStatesDaily> {
-    const dateKey = dateToDayKey(blockTime).toString();
-    let vaultState: VaultStatesDaily | undefined = await VaultStatesDaily.get(dateKey);
+  ): Promise<[VaultStatesDaily, VaultStatesDaily]> {
+    let vaultState: VaultStatesDaily | undefined = await VaultStatesDaily.get('latest');
 
     if (!vaultState) {
-      const yesterdayDate = new Date(blockTime);
-      yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-      const yesterdayDateKey = dateToDayKey(yesterdayDate).toString();
-      const yesterdayVaultState: VaultStatesDaily | undefined = await VaultStatesDaily.get(yesterdayDateKey);
-
-      if (yesterdayVaultState) {
-        vaultState = new VaultStatesDaily(
-          dateKey,
-          BigInt(blockHeight),
-          blockTime,
-          yesterdayVaultState.active,
-          yesterdayVaultState.closed,
-          yesterdayVaultState.liquidating,
-          yesterdayVaultState.liquidated,
-          yesterdayVaultState.liquidatedClosed,
-        );
-      } else {
-        vaultState = new VaultStatesDaily(
-          dateKey,
-          BigInt(blockHeight),
-          blockTime,
-          BigInt(0),
-          BigInt(0),
-          BigInt(0),
-          BigInt(0),
-          BigInt(0),
-        );
-      }
+      vaultState = new VaultStatesDaily(
+        'latest',
+        BigInt(blockHeight),
+        blockTime,
+        BigInt(0),
+        BigInt(0),
+        BigInt(0),
+        BigInt(0),
+        BigInt(0),
+      );
     }
 
     const propertyMap = {
@@ -113,17 +94,21 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       (vaultState as any)[oldProperty] -= BigInt(1);
     }
 
-    if ((newState && propertyMap[newState])) {
+    if (newState && propertyMap[newState]) {
       const newProperty = propertyMap[newState];
       (vaultState as any)[newProperty] += BigInt(1);
     }
 
-    return vaultState;
+    const dateKey = dateToDayKey(blockTime).toString();
+    const vaultStateToday = VaultStatesDaily.create(vaultState);
+    vaultStateToday.id = dateKey;
+
+    return [vaultState, vaultStateToday];
   }
 
   async function saveVaults(payload: any): Promise<Promise<any>[]> {
     let vault = await Vault.get(path);
-    const dailyVaultState = await updateVaultStatesDaily(
+    const [latestVaultState, dailyVaultState] = await updateVaultStatesDaily(
       vault?.state,
       payload?.vaultState,
       block.block.header.time,
@@ -145,7 +130,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       liquidation = await saveVaultsLiquidation(payload);
     }
 
-    return [liquidation, vault.save(), dailyVaultState.save()];
+    return [liquidation, vault.save(), latestVaultState.save(), dailyVaultState.save()];
   }
 
   async function saveVaultsLiquidation(payload: any): Promise<any> {
