@@ -1,5 +1,5 @@
-import { PsmGovernance, PsmMetrics, PsmMetricsDaily } from "../../types";
-import { dateToDayKey } from "../utils";
+import { PsmGovernance, PsmMetrics, PsmMetricsDaily } from '../../types';
+import { dateToDayKey } from '../utils';
 
 export const psmEventKit = (block: any, data: any, module: string, path: string) => {
   async function savePsmMetrics(payload: any): Promise<Promise<any>[]> {
@@ -8,13 +8,13 @@ export const psmEventKit = (block: any, data: any, module: string, path: string)
       path,
       BigInt(data.blockHeight),
       block.block.header.time as any,
-      path.split(".")[3],
-      path.split(".")[3],
+      path.split('.')[3],
+      path.split('.')[3],
       BigInt(payload.anchorPoolBalance.__value),
       BigInt(payload.feePoolBalance.__value),
       BigInt(payload.mintedPoolBalance.__value),
       BigInt(payload.totalAnchorProvided.__value),
-      BigInt(payload.totalMintedProvided.__value)
+      BigInt(payload.totalMintedProvided.__value),
     ).save();
 
     return [psmMetric, psmMetricDaily];
@@ -25,7 +25,7 @@ export const psmEventKit = (block: any, data: any, module: string, path: string)
 
     let state = await getPsmMetricDaily(dateKey);
 
-    state.denom = path.split(".")[3];
+    state.denom = path.split('.')[3];
 
     state.anchorPoolBalanceLast = BigInt(payload.anchorPoolBalance.__value);
     state.feePoolBalanceLast = BigInt(payload.feePoolBalance.__value);
@@ -39,10 +39,16 @@ export const psmEventKit = (block: any, data: any, module: string, path: string)
   }
 
   async function getPsmMetricDaily(dateKey: number): Promise<PsmMetricsDaily> {
-    const id = path + ":" + dateKey.toString();
+    const id = path + ':' + dateKey.toString();
     let state = await PsmMetricsDaily.get(id);
     if (!state) {
-      state = new PsmMetricsDaily(id, path, dateKey, BigInt(data.blockHeight), new Date(block.block.header.time as any));
+      state = new PsmMetricsDaily(
+        id,
+        path,
+        dateKey,
+        BigInt(data.blockHeight),
+        new Date(block.block.header.time as any),
+      );
     }
     return state;
   }
@@ -52,13 +58,13 @@ export const psmEventKit = (block: any, data: any, module: string, path: string)
       path,
       BigInt(data.blockHeight),
       block.block.header.time as any,
-      path.split(".")[3],
-      path.split(".")[3],
+      path.split('.')[3],
+      path.split('.')[3],
       BigInt(payload.current.MintLimit.value.__value),
       BigInt(payload.current.GiveMintedFee?.value?.denominator?.__value ?? 0),
       BigInt(payload.current.GiveMintedFee?.value?.numerator?.__value ?? 0),
       BigInt(payload.current.WantMintedFee?.value?.denominator?.__value ?? 0),
-      BigInt(payload.current.WantMintedFee?.value?.numerator?.__value ?? 0)
+      BigInt(payload.current.WantMintedFee?.value?.numerator?.__value ?? 0),
     ).save();
     return [psmGovernance];
   }

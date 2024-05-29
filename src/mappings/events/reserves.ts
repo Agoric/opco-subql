@@ -1,6 +1,6 @@
-import { promises } from "dns";
-import { ReserveAllocationMetrics, ReserveAllocationMetricsDaily, ReserveMetrics } from "../../types";
-import { dateToDayKey, extractBrand } from "../utils";
+import { promises } from 'dns';
+import { ReserveAllocationMetrics, ReserveAllocationMetricsDaily, ReserveMetrics } from '../../types';
+import { dateToDayKey, extractBrand } from '../utils';
 
 export const reservesEventKit = (block: any, data: any, module: string, path: string) => {
   async function saveReserveMetrics(payload: any): Promise<Promise<any>[]> {
@@ -11,7 +11,7 @@ export const reservesEventKit = (block: any, data: any, module: string, path: st
       block.block.header.time as any,
       BigInt(payload.shortfallBalance.__value),
       BigInt(payload.totalFeeBurned.__value),
-      BigInt(payload.totalFeeMinted.__value)
+      BigInt(payload.totalFeeMinted.__value),
     );
     promises.push(reserveMetric.save());
 
@@ -30,7 +30,7 @@ export const reservesEventKit = (block: any, data: any, module: string, path: st
           brand,
           key,
           BigInt(allocation.__value),
-          reserveMetric.id
+          reserveMetric.id,
         );
 
         promises.push(reserveAllocationMetric.save());
@@ -40,7 +40,12 @@ export const reservesEventKit = (block: any, data: any, module: string, path: st
     return promises;
   }
 
-  async function saveReserveAllocationMetricDaily(brand: string, payload: any, allocation: any, key: string): Promise<any> {
+  async function saveReserveAllocationMetricDaily(
+    brand: string,
+    payload: any,
+    allocation: any,
+    key: string,
+  ): Promise<any> {
     const dateKey = dateToDayKey(block.block.header.time);
 
     let state = await getReserveAllocationMetricDaily(brand, dateKey);
@@ -54,9 +59,9 @@ export const reservesEventKit = (block: any, data: any, module: string, path: st
 
   async function getReserveAllocationMetricDaily(
     brand: string,
-    dateKey: number
+    dateKey: number,
   ): Promise<ReserveAllocationMetricsDaily> {
-    const id = brand + ":" + dateKey.toString();
+    const id = brand + ':' + dateKey.toString();
     let state = await ReserveAllocationMetricsDaily.get(id);
     if (!state) {
       state = new ReserveAllocationMetricsDaily(
@@ -64,7 +69,7 @@ export const reservesEventKit = (block: any, data: any, module: string, path: st
         brand,
         dateKey,
         BigInt(data.blockHeight),
-        new Date(block.block.header.time as any)
+        new Date(block.block.header.time as any),
       );
     }
     return state;
