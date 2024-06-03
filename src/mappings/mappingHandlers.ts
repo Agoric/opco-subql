@@ -332,17 +332,32 @@ const fetchAccounts = async (
     return [[], ''];
   }
 };
+
+const findAddress = (obj: any) => {
+  let stack = [obj];
+
+  while (stack.length > 0) {
+    let current = stack.pop();
+
+    if (typeof current !== 'object' || current === null) {
+      continue;
+    }
+
+    for (let key in current) {
+      if (key === 'address') {
+        return current[key];
+      } else if (typeof current[key] === 'object') {
+        stack.push(current[key]);
+      }
+    }
+  }
+
+  return null;
+};
 const extractAddresses = (accounts: (BaseAccount | ModuleAccount | VestingAccount)[]): Array<string> => {
   return accounts
     .map((account) => {
-      if (isBaseAccount(account)) {
-        return account.address;
-      } else if (isModuleAccount(account)) {
-        return account.base_account.address;
-      } else if (isVestingAccount(account)) {
-        return account.base_vesting_account.address;
-      }
-      return '';
+      return findAddress(account);
     })
     .filter((address) => address !== null);
 };
@@ -365,7 +380,6 @@ const saveAccountBalances = async (address: string, balances: Balance[]) => {
     newBalance.denom = denom;
 
     await newBalance.save();
-    logger.info(`Save Operation Successful`);
   }
 };
 
@@ -395,6 +409,7 @@ export const initiateBalancesTable = async (block: CosmosBlock): Promise<void> =
     if (accounts) {
       logger.info('Storing Balances');
       const accountAddresses = extractAddresses(accounts).filter(Boolean);
+      logger.info(`Accounts Extracted: ${accountAddresses.length}`);
       await fetchAndSaveBalances(accountAddresses);
       logger.info('Balances Stored Successfully');
       offset += accounts.length; 
