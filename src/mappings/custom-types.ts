@@ -3,10 +3,10 @@ export type Balance = {
   amount: string;
 };
 
-interface PubKey {
+type PubKey = {
   '@type': string;
   key: string;
-}
+};
 
 export type BaseAccount = {
   '@type': string;

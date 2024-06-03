@@ -48,6 +48,7 @@ export const IBC_MESSAGE_TRANSFER_VALUE = b64encode('/ibc.applications.transfer.
 export const IBC_MESSAGE_RECEIVE_PACKET_VALUE = b64encode('/ibc.core.channel.v1.MsgRecvPacket');
 export const RECEPIENT_KEY = b64encode('recipient');
 export const SENDER_KEY = b64encode('sender');
+export const SPENDER_KEY = b64encode('spender');
 export const RECEIVER_KEY = b64encode('receiver');
 export const AMOUNT_KEY = b64encode('amount');
 export const TRANSFER_PORT_VALUE = 'transfer';

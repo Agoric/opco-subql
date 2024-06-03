@@ -2,6 +2,7 @@ import { Account, Balances } from '../../types';
 import { BALANCE_FIELDS } from '../constants';
 import { b64decode } from '../utils';
 import { CosmosEvent } from '@subql/types-cosmos';
+import { AMOUNT_KEY, RECEIVER_KEY, SPENDER_KEY } from '../constants';
 
 interface Attribute {
   key: string;
@@ -33,11 +34,11 @@ export const balancesEventKit = () => {
   }
 
   function getData(cosmosEvent: CosmosEvent) {
-    let dataAlreadyDecoded = true;
-    const value = getAttributeValue(cosmosEvent.event, BALANCE_FIELDS.amount);
+    let dataAlreadyDecoded = false;
+    const value = getAttributeValue(cosmosEvent.event, AMOUNT_KEY);
 
     if (!value) {
-      dataAlreadyDecoded = false;
+      dataAlreadyDecoded = true;
     }
 
     const data = dataAlreadyDecoded

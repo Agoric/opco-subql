@@ -35,7 +35,14 @@ import { boardAuxEventKit } from './events/boardAux';
 import { priceFeedEventKit } from './events/priceFeed';
 import { vaultsEventKit } from './events/vaults';
 import { reservesEventKit } from './events/reserves';
-import { AccountsResponse, BaseAccount, ModuleAccount, BalancesResponse, Balance, VestingAccount } from './custom-types';
+import {
+  AccountsResponse,
+  BaseAccount,
+  ModuleAccount,
+  BalancesResponse,
+  Balance,
+  VestingAccount,
+} from './custom-types';
 import { Operation, balancesEventKit } from './events/balances';
 import crossFetch from 'cross-fetch';
 
@@ -305,16 +312,26 @@ export const handleBalanceEvent = async (cosmosEvent: CosmosEvent): Promise<void
   }
 };
 
-const fetchAccounts = async (): Promise<AccountsResponse | void> => {
+const fetchAccounts = async (
+  offset: string,
+  limit: string,
+): Promise<[(BaseAccount | ModuleAccount | VestingAccount)[], string | null]> => {
   try {
-    const response = await crossFetch(FETCH_ACCOUNTS_URL);
-    const accounts: AccountsResponse = await response.json();
-    return accounts;
+    const url = new URL(FETCH_ACCOUNTS_URL);
+    url.searchParams.append('pagination.limit', limit);
+    url.searchParams.append('pagination.offset', offset);
+
+    const response = await crossFetch(url.toString());
+    const parsedResponse: AccountsResponse = await response.json();
+
+    const accounts: (BaseAccount | ModuleAccount | VestingAccount)[] = parsedResponse.accounts;
+
+    return [accounts, parsedResponse.pagination.next_key];
   } catch (error) {
     logger.error(`Error fetching accounts: ${error}`);
+    return [[], ''];
   }
 };
-
 const extractAddresses = (accounts: (BaseAccount | ModuleAccount | VestingAccount)[]): Array<string> => {
   return accounts
     .map((account) => {
@@ -348,20 +365,39 @@ const saveAccountBalances = async (address: string, balances: Balance[]) => {
     newBalance.denom = denom;
 
     await newBalance.save();
+    logger.info(`Save Operation Successful`);
   }
 };
 
-export const initiateBalancesTable = async (block: CosmosBlock): Promise<void> => {
-  const response = await fetchAccounts();
-
-  if (response) {
-    const accountAddresses = extractAddresses(response.accounts).filter(Boolean);
-    for (let address of accountAddresses) {
-      const response = await fetchBalance(address);
-
-      if (response) {
-        await saveAccountBalances(address, response.balances);
-      }
+const fetchAndSaveBalances = async (accountAddresses: string[]) => {
+  const fetchPromises = accountAddresses.map(async (address) => {
+    const response = await fetchBalance(address);
+    if (response) {
+      return saveAccountBalances(address, response.balances);
     }
-  }
+  });
+
+  await Promise.all(fetchPromises);
+};
+
+export const initiateBalancesTable = async (block: CosmosBlock): Promise<void> => {
+  let nextKey: string | null = null;
+  let offset: number = 0;
+  const limit: number = 1000;
+
+  logger.info('Initiate Balances Table');
+  do {
+    logger.info('Fetching Accounts');
+    const [accounts, nextPaginationKey] = await fetchAccounts(String(offset), String(limit));
+    logger.info(`Accounts Fetched: ${accounts.length}`);
+    logger.info(`Pagination Key ${nextKey}`);
+    nextKey = nextPaginationKey;
+    if (accounts) {
+      logger.info('Storing Balances');
+      const accountAddresses = extractAddresses(accounts).filter(Boolean);
+      await fetchAndSaveBalances(accountAddresses);
+      logger.info('Balances Stored Successfully');
+      offset += accounts.length; 
+    }
+  } while (nextKey);
 };
