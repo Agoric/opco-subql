@@ -18,14 +18,14 @@ export type BaseAccount = {
 
 export type ModuleAccount = {
   '@type': string;
-  base_account: {
-    address: string;
-    pub_key: PubKey | null;
-    account_number: string;
-    sequence: string;
-  };
+  base_account: BaseAccount;
   name: string;
   permissions: string[];
+};
+
+export type VestingAccount = {
+  '@type': string;
+  base_vesting_account: BaseAccount;
 };
 
 type Pagination = {

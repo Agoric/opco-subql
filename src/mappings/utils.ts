@@ -1,6 +1,6 @@
 import { bech32 } from 'bech32';
 import sha256 from 'js-sha256';
-import { BaseAccount, ModuleAccount } from './custom-types';
+import { BaseAccount, VestingAccount, ModuleAccount } from './custom-types';
 
 export function extractBrand(str: string): string {
   return str.replace('Alleged: ', '').replace(' brand', '');
@@ -117,3 +117,8 @@ export const isBaseAccount = (account: any): account is BaseAccount => {
 export const isModuleAccount = (account: any): account is ModuleAccount => {
   return account['@type'] === '/cosmos.auth.v1beta1.ModuleAccount';
 };
+
+export const isVestingAccount = (account: any): account is VestingAccount => {
+  return account['@type'] === '/cosmos.vesting.v1beta1.PeriodicVestingAccount';
+};
+

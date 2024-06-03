@@ -70,6 +70,6 @@ export const BALANCE_FIELDS = {
 };
 
 export const FETCH_ACCOUNTS_URL =
-  'http://localhost:1317/cosmos/auth/v1beta1/accounts';
+  'https://main-a.api.agoric.net:443/cosmos/auth/v1beta1/accounts';
 export const GET_FETCH_BALANCE_URL = (address: string) =>
-  `http://localhost:1317/cosmos/bank/v1beta1/balances/${address}`;
+  `https://main-a.api.agoric.net:443/cosmos/bank/v1beta1/balances/${address}`;

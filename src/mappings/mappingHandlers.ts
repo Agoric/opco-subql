@@ -8,6 +8,7 @@ import {
   getEscrowAddress,
   isBaseAccount,
   isModuleAccount,
+  isVestingAccount,
 } from './utils';
 
 import {
@@ -34,7 +35,7 @@ import { boardAuxEventKit } from './events/boardAux';
 import { priceFeedEventKit } from './events/priceFeed';
 import { vaultsEventKit } from './events/vaults';
 import { reservesEventKit } from './events/reserves';
-import { AccountsResponse, BaseAccount, ModuleAccount, BalancesResponse, Balance } from './custom-types';
+import { AccountsResponse, BaseAccount, ModuleAccount, BalancesResponse, Balance, VestingAccount } from './custom-types';
 import { Operation, balancesEventKit } from './events/balances';
 import crossFetch from 'cross-fetch';
 
@@ -314,13 +315,15 @@ const fetchAccounts = async (): Promise<AccountsResponse | void> => {
   }
 };
 
-const extractAddresses = (accounts: (BaseAccount | ModuleAccount)[]): Array<string> => {
+const extractAddresses = (accounts: (BaseAccount | ModuleAccount | VestingAccount)[]): Array<string> => {
   return accounts
     .map((account) => {
       if (isBaseAccount(account)) {
         return account.address;
       } else if (isModuleAccount(account)) {
         return account.base_account.address;
+      } else if (isVestingAccount(account)) {
+        return account.base_vesting_account.address;
       }
       return '';
     })
@@ -352,7 +355,7 @@ export const initiateBalancesTable = async (block: CosmosBlock): Promise<void> =
   const response = await fetchAccounts();
 
   if (response) {
-    const accountAddresses = extractAddresses(response.accounts);
+    const accountAddresses = extractAddresses(response.accounts).filter(Boolean);
     for (let address of accountAddresses) {
       const response = await fetchBalance(address);
 
