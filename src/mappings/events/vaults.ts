@@ -94,8 +94,14 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       (vaultState as any)[oldProperty] -= BigInt(1);
     }
 
-    if (newState && propertyMap[newState]) {
-      const newProperty = propertyMap[newState];
+    // handle liquidated -> closed = liquidatedClosed
+    const newStateModified =
+      oldState === VAULT_STATES.LIQUIDATED && newState === VAULT_STATES.CLOSED
+        ? VAULT_STATES.LIQUIDATED_CLOSED
+        : newState;
+
+    if (newStateModified && propertyMap[newStateModified]) {
+      const newProperty = propertyMap[newStateModified];
       (vaultState as any)[newProperty] += BigInt(1);
     }
 
@@ -151,7 +157,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       );
     }
 
-    const pathRegex = /^(published\.vaultFactory\.managers\.manager[0-9]+)\.vaults\.vault[0-9]+$/
+    const pathRegex = /^(published\.vaultFactory\.managers\.manager[0-9]+)\.vaults\.vault[0-9]+$/;
     const pathRegexMatch = path.match(pathRegex);
     if (!pathRegexMatch) {
       throw new Error('path format is invalid');
