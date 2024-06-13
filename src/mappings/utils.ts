@@ -101,10 +101,15 @@ export function dateToDayKey(timestamp: any): number {
 
 export const getEscrowAddress = (port: string, channel: string) => {
   const version = 'ics20-1';
-  const chainPrefix = 'agoric';
   const stringtoSha = Buffer.from([...Buffer.from(version), 0, ...Buffer.from(`${port}/${channel}`)]);
   const shaHash = sha256.sha256.array(stringtoSha.toString());
-  const bechWords = bech32.toWords(shaHash.slice(0, 20));
-  const address = bech32.encode(chainPrefix, bechWords);
+  const address = getAddressFromUint8Array(shaHash.slice(0, 20));
   return address;
+};
+
+export const getAddressFromUint8Array = (uint8Array: Array<number>, chainPrefix: string = 'agoric') => {
+  const words = bech32.toWords(uint8Array);
+  const bech32String = bech32.encode(chainPrefix, words);
+
+  return bech32String;
 };

@@ -6,6 +6,7 @@ import {
   getStateChangeModule,
   resolveBrandNamesAndValues,
   getEscrowAddress,
+  getAddressFromUint8Array,
 } from './utils';
 
 import {
@@ -137,7 +138,7 @@ export async function handleBundleInstallMessage(message: CosmosMessage): Promis
   }
 
   // JSON.stringify converts the object from Uint8Array to readable string
-  const { uncompressedSize, compressedBundle, submitter, bundle } = JSON.parse(JSON.stringify(msg.decodedMsg));
+  const { uncompressedSize, compressedBundle, bundle } = JSON.parse(JSON.stringify(msg.decodedMsg));
   const bundleRecord = new BundleInstall(
     tx.hash,
     BigInt(block.header.height),
@@ -145,7 +146,7 @@ export async function handleBundleInstallMessage(message: CosmosMessage): Promis
     BigInt(uncompressedSize),
     bundle || '',
     compressedBundle || '',
-    submitter,
+    getAddressFromUint8Array(msg.decodedMsg.submitter),
   );
 
   await bundleRecord.save();
