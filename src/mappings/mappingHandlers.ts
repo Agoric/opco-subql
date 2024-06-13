@@ -1,5 +1,5 @@
-import { StateChangeEvent, IBCChannel, IBCTransfer, TransferType } from '../types';
-import { CosmosEvent } from '@subql/types-cosmos';
+import { StateChangeEvent, IBCChannel, IBCTransfer, TransferType, BundleInstall } from '../types';
+import { CosmosEvent, CosmosMessage } from '@subql/types-cosmos';
 import {
   b64decode,
   extractStoragePath,
@@ -126,6 +126,29 @@ export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Pro
   );
 
   await Promise.allSettled([transferRecord.save(), ibcChannel]);
+}
+
+export async function handleBundleInstallMessage(message: CosmosMessage): Promise<void> {
+  const { msg, block, tx } = message;
+
+  if (msg.typeUrl !== '/agoric.swingset.MsgInstallBundle') {
+    logger.warn('message type is not /agoric.swingset.MsgInstallBundle');
+    return;
+  }
+
+  // JSON.stringify converts the object from Uint8Array to readable string
+  const { uncompressedSize, compressedBundle, submitter, bundle } = JSON.parse(JSON.stringify(msg.decodedMsg));
+  const bundleRecord = new BundleInstall(
+    tx.hash,
+    BigInt(block.header.height),
+    block.header.time as any,
+    BigInt(uncompressedSize),
+    bundle || '',
+    compressedBundle || '',
+    submitter,
+  );
+
+  await bundleRecord.save();
 }
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {

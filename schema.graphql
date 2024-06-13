@@ -303,3 +303,13 @@ type VaultStatesDaily @entity {
   liquidated: BigInt!
   liquidatedClosed: BigInt!
 }
+
+type BundleInstall @entity {
+  id: ID!
+  blockHeight: BigInt!
+  blockTime: Date!
+  uncompressedSize: BigInt!
+  bundle: String!
+  compressedBundle: String!
+  submitter: String!
+}

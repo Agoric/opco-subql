@@ -46,6 +46,13 @@ const project: CosmosProject = {
           file: "./proto/cosmos/gov/v1beta1/gov.proto",
           messages: ["WeightedVoteOption"],
         },
+      ],  
+      [
+        "/agoric.swingset.MsgInstallBundle",
+        {
+          file: "./proto/agoric/swingset/msgs.proto",
+          messages: ["MsgInstallBundle"],
+        },
       ],
     ]),
   },
@@ -105,6 +112,13 @@ const project: CosmosProject = {
             kind: CosmosHandlerKind.Event,
             filter: {
               type: "state_change",
+            },
+          },
+          {
+            handler: 'handleBundleInstallMessage',
+            kind: CosmosHandlerKind.Message,
+            filter: {
+              type: '/agoric.swingset.MsgInstallBundle',
             },
           },
         ],
