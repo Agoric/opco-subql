@@ -5,10 +5,7 @@ import {
   extractStoragePath,
   getStateChangeModule,
   resolveBrandNamesAndValues,
-  getEscrowAddress,
-  isBaseAccount,
-  isModuleAccount,
-  isVestingAccount,
+  getEscrowAddress
 } from './utils';
 
 import {
@@ -28,7 +25,6 @@ import {
   TRANSFER_PORT_VALUE,
   BALANCE_FIELDS,
   FETCH_ACCOUNTS_URL,
-  GET_FETCH_BALANCE_URL,
   GENESIS_URL,
 } from './constants';
 import { psmEventKit } from './events/psm';
