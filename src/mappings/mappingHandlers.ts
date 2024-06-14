@@ -29,6 +29,7 @@ import {
   BALANCE_FIELDS,
   FETCH_ACCOUNTS_URL,
   GET_FETCH_BALANCE_URL,
+  GENESIS_URL,
 } from './constants';
 import { psmEventKit } from './events/psm';
 import { boardAuxEventKit } from './events/boardAux';
@@ -354,65 +355,28 @@ const findAddress = (obj: any) => {
 
   return null;
 };
-const extractAddresses = (accounts: (BaseAccount | ModuleAccount | VestingAccount)[]): Array<string> => {
-  return accounts
-    .map((account) => {
-      return findAddress(account);
-    })
-    .filter((address) => address !== null);
-};
-
-const fetchBalance = async (address: string): Promise<BalancesResponse | void> => {
-  try {
-    const response = await crossFetch(GET_FETCH_BALANCE_URL(address));
-    const balance: BalancesResponse = await response.json();
-    return balance;
-  } catch (error) {
-    logger.error(`Error fetching balance for address ${address}: ${error}`);
-  }
-};
-
-const saveAccountBalances = async (address: string, balances: Balance[]) => {
-  for (let { denom, amount } of balances) {
-    const newBalance = new Balances(address);
-    newBalance.address = address;
-    newBalance.balance = BigInt(amount);
-    newBalance.denom = denom;
-
-    await newBalance.save();
-  }
-};
-
-const fetchAndSaveBalances = async (accountAddresses: string[]) => {
-  const fetchPromises = accountAddresses.map(async (address) => {
-    const response = await fetchBalance(address);
-    if (response) {
-      return saveAccountBalances(address, response.balances);
-    }
-  });
-
-  await Promise.all(fetchPromises);
-};
 
 export const initiateBalancesTable = async (block: CosmosBlock): Promise<void> => {
-  let nextKey: string | null = null;
-  let offset: number = 0;
-  const limit: number = 1000;
+  try {
+    logger.info(`Initiating Balances Table`);
+    const response = await crossFetch(GENESIS_URL);
+    const parsedResponse = await response.json();
+    const data = parsedResponse.genesis.app_state.bank;
 
-  logger.info('Initiate Balances Table');
-  do {
-    logger.info('Fetching Accounts');
-    const [accounts, nextPaginationKey] = await fetchAccounts(String(offset), String(limit));
-    logger.info(`Accounts Fetched: ${accounts.length}`);
-    logger.info(`Pagination Key ${nextKey}`);
-    nextKey = nextPaginationKey;
-    if (accounts) {
-      logger.info('Storing Balances');
-      const accountAddresses = extractAddresses(accounts).filter(Boolean);
-      logger.info(`Accounts Extracted: ${accountAddresses.length}`);
-      await fetchAndSaveBalances(accountAddresses);
-      logger.info('Balances Stored Successfully');
-      offset += accounts.length; 
+    for (let element of data.balances) {
+      let newBalance;
+      for (const coin of element.coins) {
+        newBalance = new Balances(`${element.address}-${coin.denom}`);
+        newBalance.address = element.address;
+        newBalance.balance = BigInt(coin.amount);
+        newBalance.denom = coin.denom;
+
+        await newBalance.save();
+      }
     }
-  } while (nextKey);
+
+    logger.info(`Balances Table Initiated`);
+  } catch (error) {
+    logger.error(`Error initiating balances table: ${error}`);
+  }
 };
