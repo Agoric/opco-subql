@@ -103,11 +103,12 @@ export const getEscrowAddress = (port: string, channel: string) => {
   const version = 'ics20-1';
   const stringtoSha = Buffer.from([...Buffer.from(version), 0, ...Buffer.from(`${port}/${channel}`)]);
   const shaHash = sha256.sha256.array(stringtoSha.toString());
-  const address = getAddressFromUint8Array(shaHash.slice(0, 20));
+  const hashArray = new Uint8Array(shaHash.slice(0, 20));
+  const address = getAddressFromUint8Array(hashArray);
   return address;
 };
 
-export const getAddressFromUint8Array = (uint8Array: Array<number>, chainPrefix: string = 'agoric') => {
+export const getAddressFromUint8Array = (uint8Array: Uint8Array, chainPrefix: string = 'agoric') => {
   const words = bech32.toWords(uint8Array);
   const bech32String = bech32.encode(chainPrefix, words);
 
