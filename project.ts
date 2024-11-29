@@ -23,7 +23,7 @@ const project: CosmosProject = {
     // chainId: "agoriclocal",
     // endpoint: ["http://host.docker.internal:26657/"],
     chainId: "agoric-3",
-    endpoint: ["https://main-a.rpc.agoric.net:443"],
+    endpoint: ["https://main-b.rpc.agoric.net:443"],
 
     chaintypes: new Map([
       [
@@ -67,6 +67,7 @@ const project: CosmosProject = {
       // startBlock: 2115669,
       // Upgrade 8 (launch of Inter Protocol)
       startBlock: 7179262,
+      endBlock: 7179272,
 
       mapping: {
         file: "./dist/index.js",

@@ -66,16 +66,16 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
     logger.warn('No packet source channel found');
     return;
   }
-  const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
+  const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value as string);
   const sourceChannel = packetSrcChannelAttr.value;
 
-  const ibcChannel = saveIbcChannel(sourceChannel);
+  const ibcChannel = saveIbcChannel(sourceChannel as string);
 
   const transferRecord = new IBCTransfer(
     tx.hash,
     block.header.time as any,
     BigInt(block.header.height),
-    packetSrcChannelAttr.value,
+    packetSrcChannelAttr.value as string,
     sender,
     receiver,
     denom,
@@ -109,16 +109,16 @@ export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Pro
     logger.warn('No packet destination channel found');
     return;
   }
-  const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value);
+  const { amount, denom, receiver, sender } = JSON.parse(packetDataAttr.value as string);
   const destinationChannel = packetDstChannelAttr.value;
 
-  const ibcChannel = saveIbcChannel(destinationChannel);
+  const ibcChannel = saveIbcChannel(destinationChannel as string);
 
   const transferRecord = new IBCTransfer(
     tx.hash,
     block.header.time as any,
     BigInt(block.header.height),
-    destinationChannel,
+    destinationChannel as string,
     sender,
     receiver,
     denom,
@@ -154,7 +154,7 @@ export async function handleBundleInstallMessage(message: CosmosMessage): Promis
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block } = cosmosEvent;
-
+  logger.warn('fraz 1 ' + JSON.stringify(event, null, 2));
   if (event.type != EVENT_TYPES.STATE_CHANGE) {
     logger.warn('Not valid state_change event.');
     return;
@@ -162,6 +162,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   const storeAttr = event.attributes.find((a) => a.key === STORE_KEY || a.key === STORE_NAME_KEY);
   if (!storeAttr || storeAttr.value != VSTORAGE_VALUE) {
+    logger.warn('Store attr is missing or empty.' + JSON.stringify(storeAttr, null, 2));
     return;
   }
 
@@ -180,9 +181,10 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
   let data = Object();
   try {
     const decodedValue =
-      valueAttr.key === UNPROVED_VALUE_KEY ? b64decode(b64decode(valueAttr.value)) : b64decode(valueAttr.value);
+      valueAttr.key === UNPROVED_VALUE_KEY ? b64decode((valueAttr.value as string)) : (valueAttr.value as string);
     data = JSON.parse(decodedValue);
   } catch (e) {
+    logger.warn('decoded value is broken');
     return;
   }
 
@@ -193,10 +195,11 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   const decodedKey =
     keyAttr.key === SUBKEY_KEY
-      ? b64decode(b64decode(keyAttr.value)).replaceAll('\u0000', '\x00')
-      : b64decode(keyAttr.value);
+      ? b64decode((keyAttr.value as string)).replaceAll('\u0000', '\x00')
+      : (keyAttr.value as string);
   const path = extractStoragePath(decodedKey);
   const module = getStateChangeModule(path);
+  logger.warn('fraz 2 ' + decodedKey + data);
 
   const recordSaves: (Promise<void> | undefined)[] = [];
 
