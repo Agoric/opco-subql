@@ -34,7 +34,7 @@
   "devDependencies": {
     "@babel/preset-typescript": "^7.23.2",
     "@cosmjs/stargate": "^0.28.9",
-    "@subql/cli": "^4.2.6",
+    "@subql/cli": "^5.3.3",
     "@subql/node-cosmos": "^3.9.2",
     "@subql/testing": "latest",
     "@types/jest": "^29.5.7",
