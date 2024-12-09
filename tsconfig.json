@@ -11,7 +11,11 @@
     "rootDir": "src",
     "target": "es2017",
     "strict": true,
-    "lib": ["es2021"]
+    // UNTIL package-json-type and ejs packages have types
+    "skipLibCheck": true,
+    "lib": [
+      "es2021"
+    ]
   },
   "include": [
     "src/**/*",
