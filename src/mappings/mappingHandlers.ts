@@ -1,5 +1,6 @@
+import type { tendermint37 } from '@cosmjs/tendermint-rpc';
 import { StateChangeEvent, IBCChannel, IBCTransfer, TransferType, BundleInstall } from '../types';
-import { CosmosEvent, CosmosMessage } from '@subql/types-cosmos';
+import { CosmosEvent, CosmosMessage, type CosmosBlock } from '@subql/types-cosmos';
 import {
   b64decode,
   extractStoragePath,
@@ -44,7 +45,7 @@ async function saveIbcChannel(channelName: string) {
 }
 
 export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promise<void> {
-  const { event, block, tx } = cosmosEvent;
+  const { event, block, tx } = cosmosEvent as CosmosEvent & { event: tendermint37.Event};
   if (event.type != EVENT_TYPES.SEND_PACKET) {
     logger.warn('Not valid send_packet event.');
     return;
@@ -86,7 +87,7 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
 }
 
 export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Promise<void> {
-  const { event, block, tx } = cosmosEvent;
+  const { event, block, tx } = cosmosEvent as CosmosEvent & { event: tendermint37.Event};
   if (event.type != EVENT_TYPES.RECEIVE_PACKET) {
     logger.warn('Not valid recv_packet event.');
     return;
@@ -153,7 +154,7 @@ export async function handleBundleInstallMessage(message: CosmosMessage): Promis
 }
 
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
-  const { event, block } = cosmosEvent;
+  const { event, block } = cosmosEvent as CosmosEvent & { event: tendermint37.Event};
 
   if (event.type != EVENT_TYPES.STATE_CHANGE) {
     logger.warn('Not valid state_change event.');
