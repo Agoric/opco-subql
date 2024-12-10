@@ -3357,7 +3357,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:2.16.0":
+"@subql/utils@npm:2.16.0, @subql/utils@npm:^2.16.0":
   version: 2.16.0
   resolution: "@subql/utils@npm:2.16.0"
   dependencies:
@@ -4092,6 +4092,7 @@ __metadata:
     "@subql/node-cosmos": "npm:^4.2.1"
     "@subql/testing": "npm:latest"
     "@subql/types-cosmos": "npm:^4.0.0"
+    "@subql/utils": "npm:^2.16.0"
     "@types/node": "npm:^17.0.21"
     bech32: "npm:^2.0.0"
     js-sha256: "npm:^0.11.0"
