@@ -1,57 +1,57 @@
-import { CosmosDatasourceKind, CosmosHandlerKind, CosmosProject } from "@subql/types-cosmos";
+import { CosmosDatasourceKind, CosmosHandlerKind, CosmosProject } from '@subql/types-cosmos';
 
 // Can expand the Datasource processor types via the genreic param
 const project: CosmosProject = {
-  specVersion: "1.0.0",
-  version: "0.0.1",
-  name: "agoric-starter",
-  description: "This project can be use as a starting point for developing your Cosmos agoric based SubQuery project",
+  specVersion: '1.0.0',
+  version: '0.0.1',
+  name: 'agoric-starter',
+  description: 'This project can be use as a starting point for developing your Cosmos agoric based SubQuery project',
   runner: {
     node: {
-      name: "@subql/node-cosmos",
-      version: ">=3.0.0",
+      name: '@subql/node-cosmos',
+      version: '>=3.0.0',
     },
     query: {
-      name: "@subql/query",
-      version: "*",
+      name: '@subql/query',
+      version: '*',
     },
   },
   schema: {
-    file: "./schema.graphql",
+    file: './schema.graphql',
   },
   network: {
     // chainId: "agoriclocal",
     // endpoint: ["http://host.docker.internal:26657/"],
-    chainId: "agoric-3",
-    endpoint: ["https://main-a.rpc.agoric.net:443"],
+    chainId: 'agoric-3',
+    endpoint: ['https://main-a.rpc.agoric.net:443'],
 
     chaintypes: new Map([
       [
-        "cosmos.slashing.v1beta1",
+        'cosmos.slashing.v1beta1',
         {
-          file: "./proto/cosmos/slashing/v1beta1/tx.proto",
-          messages: ["MsgUnjail"],
+          file: './proto/cosmos/slashing/v1beta1/tx.proto',
+          messages: ['MsgUnjail'],
         },
       ],
       [
-        "cosmos.gov.v1beta1",
+        'cosmos.gov.v1beta1',
         {
-          file: "./proto/cosmos/gov/v1beta1/tx.proto",
-          messages: ["MsgVoteWeighted"],
+          file: './proto/cosmos/gov/v1beta1/tx.proto',
+          messages: ['MsgVoteWeighted'],
         },
       ],
       [
-        "cosmos.gov.v1beta1.gov",
+        'cosmos.gov.v1beta1.gov',
         {
-          file: "./proto/cosmos/gov/v1beta1/gov.proto",
-          messages: ["WeightedVoteOption"],
+          file: './proto/cosmos/gov/v1beta1/gov.proto',
+          messages: ['WeightedVoteOption'],
         },
-      ],  
+      ],
       [
-        "/agoric.swingset.MsgInstallBundle",
+        '/agoric.swingset.MsgInstallBundle',
         {
-          file: "./proto/agoric/swingset/msgs.proto",
-          messages: ["MsgInstallBundle"],
+          file: './proto/agoric/swingset/msgs.proto',
+          messages: ['MsgInstallBundle'],
         },
       ],
     ]),
@@ -69,7 +69,7 @@ const project: CosmosProject = {
       startBlock: 7179262,
 
       mapping: {
-        file: "./dist/index.js",
+        file: './dist/index.js',
         handlers: [
           // {
           //     Using block handlers slows your project down as they can be executed with each and every block.
@@ -108,10 +108,10 @@ const project: CosmosProject = {
           //   },
           // },
           {
-            handler: "handleStateChangeEvent",
+            handler: 'handleStateChangeEvent',
             kind: CosmosHandlerKind.Event,
             filter: {
-              type: "state_change",
+              type: 'state_change',
             },
           },
           {
