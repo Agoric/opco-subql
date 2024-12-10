@@ -1,5 +1,56 @@
 import { CosmosDatasourceKind, CosmosHandlerKind, CosmosProject } from '@subql/types-cosmos';
 
+const chainTypesU18 = new Map([
+  [
+    'cosmos.slashing.v1beta1',
+    {
+      file: './proto/cosmos/slashing/v1beta1/tx.proto',
+      messages: ['MsgUnjail'],
+    },
+  ],
+  [
+    'cosmos.gov.v1beta1',
+    {
+      file: './proto/cosmos/gov/v1beta1/tx.proto',
+      messages: ['MsgVoteWeighted'],
+    },
+  ],
+  [
+    'cosmos.gov.v1beta1.gov',
+    {
+      file: './proto/cosmos/gov/v1beta1/gov.proto',
+      messages: ['WeightedVoteOption'],
+    },
+  ],
+  [
+    '/agoric.swingset.MsgInstallBundle',
+    {
+      file: './proto/agoric/swingset/msgs.proto',
+      messages: ['MsgInstallBundle'],
+    },
+  ],
+]);
+
+const networkConfig = {
+  local: {
+    chainId: 'agoriclocal',
+    endpoint: ['http://localhost:26657'],
+    chaintypes: chainTypesU18,
+  },
+  docker: {
+    chainId: 'agoriclocal',
+    endpoint: ['http://host.docker.internal:26657'],
+    chaintypes: chainTypesU18,
+  },
+  main: {
+    chainId: 'agoric-3',
+    endpoint: ['https://main-a.rpc.agoric.net:443'],
+    chaintypes: chainTypesU18,
+  },
+};
+
+const networkKey = process.env.AGORIC_NET || 'main';
+
 // Can expand the Datasource processor types via the genreic param
 const project: CosmosProject = {
   specVersion: '1.0.0',
@@ -19,43 +70,7 @@ const project: CosmosProject = {
   schema: {
     file: './schema.graphql',
   },
-  network: {
-    // chainId: "agoriclocal",
-    // endpoint: ["http://host.docker.internal:26657/"],
-    chainId: 'agoric-3',
-    endpoint: ['https://main-a.rpc.agoric.net:443'],
-
-    chaintypes: new Map([
-      [
-        'cosmos.slashing.v1beta1',
-        {
-          file: './proto/cosmos/slashing/v1beta1/tx.proto',
-          messages: ['MsgUnjail'],
-        },
-      ],
-      [
-        'cosmos.gov.v1beta1',
-        {
-          file: './proto/cosmos/gov/v1beta1/tx.proto',
-          messages: ['MsgVoteWeighted'],
-        },
-      ],
-      [
-        'cosmos.gov.v1beta1.gov',
-        {
-          file: './proto/cosmos/gov/v1beta1/gov.proto',
-          messages: ['WeightedVoteOption'],
-        },
-      ],
-      [
-        '/agoric.swingset.MsgInstallBundle',
-        {
-          file: './proto/agoric/swingset/msgs.proto',
-          messages: ['MsgInstallBundle'],
-        },
-      ],
-    ]),
-  },
+  network: networkConfig[networkKey],
   dataSources: [
     {
       kind: CosmosDatasourceKind.Runtime,
