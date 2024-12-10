@@ -28,6 +28,7 @@
     "@subql/node-cosmos": "^4.2.1",
     "@subql/testing": "latest",
     "prettier": "^3.4.2",
+    "starknet": "6.11.0",
     "typescript": "^5.7.2"
   },
   "dependencies": {
