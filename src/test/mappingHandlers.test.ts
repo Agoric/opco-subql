@@ -1,3 +1,4 @@
+/** @file test against agoric-3-proposals:latest */
 import { subqlTest } from '@subql/testing';
 import {
   StateChangeEvent,
@@ -99,14 +100,15 @@ subqlTest(
   'handleStateChangeEvent',
 );
 
+const VaultManagerGovernance_Height = 1153;
 subqlTest(
-  'VaultManagerGovernance in state_change at block 982',
-  982, // block height to process
+  'VaultManagerGovernance in state_change',
+  VaultManagerGovernance_Height, // block height to process
   [],
   [
     new VaultManagerGovernance(
       'published.vaultFactory.managers.manager1.governance',
-      BigInt(982),
+      BigInt(VaultManagerGovernance_Height),
       new Date('2024-01-17T20:29:32.963Z'),
       BigInt(1000000000),
       BigInt(100),
