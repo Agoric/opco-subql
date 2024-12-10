@@ -3,7 +3,7 @@ on:
   pull_request:
 
 jobs:
-  pr:
+  test:
     runs-on: ubuntu-latest
     services:
       postgres:
