@@ -1,7 +1,7 @@
 {
-  "name": "agoric-starter",
+  "name": "agoric-indexer",
   "version": "0.0.1",
-  "description": "This project can be use as a starting point for developing your Agoric based SubQuery project",
+  "description": "This is the SubQuery project for indexing the Agoric chain",
   "main": "dist/index.js",
   "scripts": {
     "build": "subql build",
@@ -15,8 +15,8 @@
     "prettier:check": "prettier --list-different . --print-width 120",
     "prettier:write": "prettier --write . --print-width 120"
   },
-  "homepage": "https://github.com/subquery/cosmos-subql-starter",
-  "repository": "github:subquery/cosmos-subql-starter",
+  "homepage": "https://github.com/Agoric/agoric-subql",
+  "repository": "github:Agoric/agoric-subql",
   "files": [
     "dist",
     "schema.graphql",
@@ -29,8 +29,8 @@
       "/dist/"
     ]
   },
-  "author": "SubQuery Team",
-  "license": "MIT",
+  "author": "Agoric OpCo",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@babel/preset-typescript": "^7.26.0",
     "@cosmjs/stargate": "^0.28.9",

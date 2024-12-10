@@ -4366,9 +4366,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"agoric-starter@workspace:.":
+"agoric-indexer@workspace:.":
   version: 0.0.0-use.local
-  resolution: "agoric-starter@workspace:."
+  resolution: "agoric-indexer@workspace:."
   dependencies:
     "@babel/preset-typescript": "npm:^7.26.0"
     "@cosmjs/stargate": "npm:^0.28.9"
