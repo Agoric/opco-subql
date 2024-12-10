@@ -13,9 +13,7 @@
     "strict": true,
     // UNTIL package-json-type and ejs packages have types
     "skipLibCheck": true,
-    "lib": [
-      "es2021"
-    ]
+    "lib": ["es2021"]
   },
   "include": [
     "src/**/*",
