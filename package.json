@@ -5,13 +5,11 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "subql build",
-    "pub": "subql publish",
     "codegen": "subql codegen",
     "start:docker": "docker-compose pull && docker-compose up --remove-orphans",
     "dev": "subql codegen && subql build && docker-compose pull && docker-compose up --remove-orphans",
     "prepack": "rm -rf dist && npm run build",
-    "test": "jest",
-    "subql": "subql codegen --help",
+    "test": "subql build && subql-node-cosmos test",
     "prettier:check": "prettier --list-different . --print-width 120",
     "prettier:write": "prettier --write . --print-width 120"
   },
@@ -22,25 +20,14 @@
     "schema.graphql",
     "project.yaml"
   ],
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "modulePathIgnorePatterns": [
-      "/dist/"
-    ]
-  },
   "author": "Agoric OpCo",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@babel/preset-typescript": "^7.26.0",
     "@cosmjs/stargate": "^0.28.9",
     "@subql/cli": "^5.3.3",
     "@subql/node-cosmos": "^4.2.1",
     "@subql/testing": "latest",
-    "@types/jest": "^29.5.7",
-    "jest": "^29.7.0",
     "prettier": "^3.4.2",
-    "ts-jest": "^29.1.2",
     "typescript": "^5.7.2"
   },
   "dependencies": {
