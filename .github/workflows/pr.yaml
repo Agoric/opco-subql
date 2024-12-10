@@ -1,24 +1,30 @@
 name: PR
-# on:
-#   pull_request:
-#     paths-ignore:
-#       - ".github/workflows/**"
+on:
+  pull_request:
+
 jobs:
   pr:
-    name: pr
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      # Before setup-node because that action runs `yarn cache dir`. See https://github.com/actions/setup-node/issues/480#issuecomment-1915448139
+      - run: corepack enable
+        shell: bash
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-      - run: yarn
+          cache: yarn
+      - run: yarn install
+      - run: yarn prettier:check
       - name: Codegen
         run: yarn codegen
+      # After codegen because that makes src/types/
+      - run: yarn tsc
       - name: Build
         run: yarn build
-      - name: Install subql-node-cosmos
-        run: yarn global add @subql/node-cosmos
-      - name: Run tests with Subquery Node
-        run: subql-node-cosmos test -f ${{ github.workspace }}
+      # TODO: https://github.com/Agoric/agoric-subql/issues/8
+      # - name: Install subql-node-cosmos
+      #   run: yarn global add @subql/node-cosmos
+      # - name: Run tests with Subquery Node
+      #   run: subql-node-cosmos test -f ${{ github.workspace }}
