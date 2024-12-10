@@ -36,20 +36,32 @@ const networkConfig = {
     chainId: 'agoriclocal',
     endpoint: ['http://localhost:26657'],
     chaintypes: chainTypesU18,
+    startBlock: 0,
   },
   docker: {
     chainId: 'agoriclocal',
     endpoint: ['http://host.docker.internal:26657'],
     chaintypes: chainTypesU18,
+    startBlock: 0,
   },
   main: {
     chainId: 'agoric-3',
     endpoint: ['https://main-a.rpc.agoric.net:443'],
     chaintypes: chainTypesU18,
+    startBlock: 2115669,
   },
 };
 
 const networkKey = process.env.AGORIC_NET || 'main';
+
+const startBlock = {
+  local: 0,
+  docker: 0,
+  main: 2115669,
+  /** Launch of Inter Protocol */
+  upgrade8: 7179262,
+};
+const startBlockKey = process.env.SUBQL_START_BLOCK || networkKey;
 
 // Can expand the Datasource processor types via the genreic param
 const project: CosmosProject = {
@@ -74,14 +86,13 @@ const project: CosmosProject = {
   dataSources: [
     {
       kind: CosmosDatasourceKind.Runtime,
-      // First block of mainnet is 2115669
+      // TODO document these
       // startBlock: 2115669,
       // startBlock: 14347000,
       // startBlock: 12306806,
       // startBlock: 13017175,
       // startBlock: 2115669,
-      // Upgrade 8 (launch of Inter Protocol)
-      startBlock: 7179262,
+      startBlock: startBlock[startBlockKey],
 
       mapping: {
         file: './dist/index.js',
