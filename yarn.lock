@@ -3240,22 +3240,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common@npm:5.2.1, @subql/common@npm:^5.2.1":
-  version: 5.2.1
-  resolution: "@subql/common@npm:5.2.1"
-  dependencies:
-    "@subql/types-core": "npm:2.0.0"
-    axios: "npm:^0.28.0"
-    class-transformer: "npm:^0.5.1"
-    class-validator: "npm:^0.14.1"
-    js-yaml: "npm:^4.1.0"
-    reflect-metadata: "npm:^0.1.14"
-    semver: "npm:^7.6.3"
-    update-notifier: "npm:^5.1.0"
-  checksum: 10c0/02ac5e46489e9eeb73f01c007e868d491f415462d654149bb296f1c4f0d74ff67b4881458a154f237a1e88df7f4a99fdf0ff44739b85ae44b871234642753fc6
-  languageName: node
-  linkType: hard
-
 "@subql/common@npm:5.2.2":
   version: 5.2.2
   resolution: "@subql/common@npm:5.2.2"
@@ -3273,18 +3257,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^15.0.2":
-  version: 15.0.3
-  resolution: "@subql/node-core@npm:15.0.3"
+"@subql/common@npm:^5.2.1":
+  version: 5.2.1
+  resolution: "@subql/common@npm:5.2.1"
+  dependencies:
+    "@subql/types-core": "npm:2.0.0"
+    axios: "npm:^0.28.0"
+    class-transformer: "npm:^0.5.1"
+    class-validator: "npm:^0.14.1"
+    js-yaml: "npm:^4.1.0"
+    reflect-metadata: "npm:^0.1.14"
+    semver: "npm:^7.6.3"
+    update-notifier: "npm:^5.1.0"
+  checksum: 10c0/02ac5e46489e9eeb73f01c007e868d491f415462d654149bb296f1c4f0d74ff67b4881458a154f237a1e88df7f4a99fdf0ff44739b85ae44b871234642753fc6
+  languageName: node
+  linkType: hard
+
+"@subql/node-core@npm:^16.1.0":
+  version: 16.1.0
+  resolution: "@subql/node-core@npm:16.1.0"
   dependencies:
     "@apollo/client": "npm:^3.11.2"
     "@nestjs/common": "npm:^9.4.0"
     "@nestjs/event-emitter": "npm:^2.0.0"
     "@nestjs/schedule": "npm:^3.0.1"
-    "@subql/common": "npm:5.2.1"
+    "@subql/common": "npm:5.2.2"
     "@subql/testing": "npm:2.2.2"
     "@subql/types": "npm:3.11.4"
-    "@subql/utils": "npm:2.16.0"
+    "@subql/utils": "npm:2.17.0"
     "@willsoto/nestjs-prometheus": "npm:^5.4.0"
     async-mutex: "npm:^0.5.0"
     cron-converter: "npm:^2.0.1"
@@ -3301,7 +3301,7 @@ __metadata:
     toposort-class: "npm:^1.0.1"
     vm2: "npm:^3.9.19"
     yargs: "npm:^16.2.0"
-  checksum: 10c0/fe5f8f5ca4f8f6dc90d9cb9b450345952eacb9106c610fb9812f6ae9138714820347e1e4667d3b9bc73b19ec6652f045a7c6fca46b1911fee226a16700460f04
+  checksum: 10c0/0760a511d78e00dd6961daece046affc287329bc5693a49e65262d910aaacf670f71d089a461b1931297e88241c5718091618880a942df2b142a5a6e59ea573f
   languageName: node
   linkType: hard
 
@@ -3372,25 +3372,6 @@ __metadata:
   peerDependencies:
     "@polkadot/api": ^14
   checksum: 10c0/2ec02859c30c6bd9629bc06f524baa1e743c45baeebd2af349168fa15eb2276daa6747f20f7d201e5de95b8e8207befc3aa30a5cf95e2bf838e70d24fe8920c3
-  languageName: node
-  linkType: hard
-
-"@subql/utils@npm:2.16.0":
-  version: 2.16.0
-  resolution: "@subql/utils@npm:2.16.0"
-  dependencies:
-    "@polkadot/util": "npm:^13.2.3"
-    "@polkadot/util-crypto": "npm:^13.2.3"
-    "@subql/x-sequelize": "npm:6.32.0-0.0.4"
-    chalk: "npm:^4.1.2"
-    detect-port: "npm:^1.6.1"
-    flatted: "npm:^3.3.1"
-    graphql: "npm:^15.8.0"
-    graphql-tag: "npm:^2.12.6"
-    lodash: "npm:^4.17.21"
-    pino: "npm:^6.13.3"
-    rotating-file-stream: "npm:^3.2.3"
-  checksum: 10c0/a72f222b2b956c06b636e4a10f2d6f6e5e4e96451660eb80754897f8066fe8364ec55ff41ceb45eb668226ac95c4df7965fcb9e1c25d1f1ceae80598293792b3
   languageName: node
   linkType: hard
 
