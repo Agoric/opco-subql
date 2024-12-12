@@ -17,9 +17,8 @@ services:
 
   subquery-node:
     image: subquerynetwork/subql-node-cosmos:v3.12.0
-    depends_on:
-      'postgres':
-        condition: service_healthy
+    pull_policy: if_not_present
+    depends_on: ['postgres']
     restart: always
     environment:
       DB_USER: postgres
@@ -45,13 +44,12 @@ services:
 
   graphql-engine:
     image: onfinality/subql-query:v2.13.0
+    pull_policy: if_not_present
     ports:
       - 3000:3000
     depends_on:
-      'postgres':
-        condition: service_healthy
-      'subquery-node':
-        condition: service_healthy
+      - 'postgres'
+      - 'subquery-node'
     restart: always
     environment:
       DB_USER: postgres
@@ -63,3 +61,29 @@ services:
       - --name=app
       - --playground
       - --indexer=http://subquery-node:3000
+
+  agd:
+    image: ghcr.io/agoric/agoric-3-proposals:latest
+    pull_policy: if_not_present
+    platform: linux/amd64
+    ports:
+      - 26656:26656
+      - 26657:26657
+      - 1317:1317
+    environment:
+      DEST: 1
+      DEBUG: 'SwingSet:ls,SwingSet:vat'
+    volumes:
+      - .:/workspace
+    entrypoint: ['bash', '-c']
+    command: >
+      chmod +x /workspace/scripts/run-chain.sh &&
+      /workspace/scripts/run-chain.sh ||
+      echo 'Failed to execute run-chain.sh, checking environment and permissions' &&
+      ls -la /workspace/scripts &&
+      env
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:26657/status']
+      interval: 5s
+      timeout: 10s
+      retries: 5
