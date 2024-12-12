@@ -36,13 +36,13 @@ const networkConfig = {
     chainId: 'agoriclocal',
     endpoint: ['http://localhost:26657'],
     chaintypes: chainTypesU18,
-    startBlock: 0,
+    startBlock: 1,
   },
   docker: {
     chainId: 'agoriclocal',
     endpoint: ['http://host.docker.internal:26657'],
     chaintypes: chainTypesU18,
-    startBlock: 0,
+    startBlock: 1,
   },
   main: {
     chainId: 'agoric-3',
@@ -55,8 +55,8 @@ const networkConfig = {
 const networkKey = process.env.AGORIC_NET || 'main';
 
 const startBlock = {
-  local: 0,
-  docker: 0,
+  local: 1,
+  docker: 1,
   main: 2115669,
   /** Launch of Inter Protocol */
   upgrade8: 7179262,
