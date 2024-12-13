@@ -156,9 +156,6 @@ export async function handleBundleInstallMessage(message: CosmosMessage): Promis
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block } = cosmosEvent as CosmosEvent & { event: tendermint37.Event };
 
-  logger.info(`EVENT ${JSON.stringify(event)}`);
-  logger.info(`EVENT TYPE:${event.type}`);
-
   if (event.type != EVENT_TYPES.STATE_CHANGE) {
     logger.warn('Not valid state_change event.');
     return;
@@ -183,8 +180,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   let data = Object();
   try {
-    const decodedValue =
-      valueAttr.key === UNPROVED_VALUE_KEY ? b64decode(b64decode(valueAttr.value)) : b64decode(valueAttr.value);
+    const decodedValue = valueAttr.key === UNPROVED_VALUE_KEY ? b64decode(valueAttr.value) : valueAttr.value;
     data = JSON.parse(decodedValue);
   } catch (e) {
     return;
@@ -195,10 +191,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     return;
   }
 
-  const decodedKey =
-    keyAttr.key === SUBKEY_KEY
-      ? b64decode(b64decode(keyAttr.value)).replaceAll('\u0000', '\x00')
-      : b64decode(keyAttr.value);
+  const decodedKey = keyAttr.key === SUBKEY_KEY ? b64decode(keyAttr.value).replaceAll('\u0000', '\x00') : keyAttr.value;
   const path = extractStoragePath(decodedKey);
   const module = getStateChangeModule(path);
 
