@@ -156,6 +156,9 @@ export async function handleBundleInstallMessage(message: CosmosMessage): Promis
 export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
   const { event, block } = cosmosEvent as CosmosEvent & { event: tendermint37.Event };
 
+  logger.info(`EVENT ${JSON.stringify(event)}`);
+  logger.info(`EVENT TYPE:${event.type}`);
+
   if (event.type != EVENT_TYPES.STATE_CHANGE) {
     logger.warn('Not valid state_change event.');
     return;
