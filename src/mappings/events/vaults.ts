@@ -34,6 +34,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
   }
 
   async function saveWallets(payload: any): Promise<Promise<any>[]> {
+    logger.info(`PAYLOAD: ${JSON.stringify(payload)}`);
     const promises: Promise<void>[] = [];
     const address = path.split('.')[2];
     const wallet = new Wallet(path, BigInt(data.blockHeight), block.block.header.time as any, address);
