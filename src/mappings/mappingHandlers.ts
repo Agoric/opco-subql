@@ -1,38 +1,40 @@
 import type { tendermint37 } from '@cosmjs/tendermint-rpc';
-import { StateChangeEvent, IBCChannel, IBCTransfer, TransferType, BundleInstall } from '../types';
-import { CosmosEvent, CosmosMessage, type CosmosBlock } from '@subql/types-cosmos';
+import { CosmosEvent, CosmosMessage } from '@subql/types-cosmos';
+import { BundleInstall, IBCChannel, IBCTransfer, StateChangeEvent, TransferType } from '../types';
 import {
   b64decode,
   extractStoragePath,
+  getAddressFromUint8Array,
+  getEscrowAddress,
   getStateChangeModule,
   resolveBrandNamesAndValues,
-  getEscrowAddress,
-  getAddressFromUint8Array,
 } from './utils';
 
-import {
-  EVENT_TYPES,
-  STORE_KEY,
-  VSTORAGE_VALUE,
-  KEY_KEY,
-  VALUE_KEY,
-  STORE_NAME_KEY,
-  SUBKEY_KEY,
-  UNPROVED_VALUE_KEY,
-  PACKET_DATA_KEY,
-  PACKET_SRC_CHANNEL_KEY,
-  PACKET_DST_CHANNEL_KEY,
-  PACKET_DST_PORT_KEY,
-  PACKET_SRC_PORT_KEY,
-  TRANSFER_PORT_VALUE,
-} from './constants';
-import { psmEventKit } from './events/psm';
-import { boardAuxEventKit } from './events/boardAux';
-import { priceFeedEventKit } from './events/priceFeed';
-import { vaultsEventKit } from './events/vaults';
-import { reservesEventKit } from './events/reserves';
 import type { StreamCell } from '@agoric/internal/src/lib-chainStorage';
 import type { CapData } from '@endo/marshal';
+import assert from 'assert';
+import {
+  EVENT_TYPES,
+  KEY_KEY,
+  PACKET_DATA_KEY,
+  PACKET_DST_CHANNEL_KEY,
+  PACKET_DST_PORT_KEY,
+  PACKET_SRC_CHANNEL_KEY,
+  PACKET_SRC_PORT_KEY,
+  STORE_KEY,
+  STORE_NAME_KEY,
+  SUBKEY_KEY,
+  TRANSFER_PORT_VALUE,
+  UNPROVED_VALUE_KEY,
+  VALUE_KEY,
+  VSTORAGE_VALUE,
+} from './constants';
+import { boardAuxEventKit } from './events/boardAux';
+import { transactionEventKit } from './events/fastUsdc';
+import { priceFeedEventKit } from './events/priceFeed';
+import { psmEventKit } from './events/psm';
+import { reservesEventKit } from './events/reserves';
+import { vaultsEventKit } from './events/vaults';
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -155,8 +157,8 @@ export async function handleBundleInstallMessage(message: CosmosMessage): Promis
   await bundleRecord.save();
 }
 
-export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<void> {
-  const { event, block } = cosmosEvent as CosmosEvent & { event: tendermint37.Event };
+export async function handleStateChangeEvent(cosmosEvent: CosmosEvent & { event: tendermint37.Event }): Promise<void> {
+  const { event, block } = cosmosEvent;
 
   if (event.type != EVENT_TYPES.STATE_CHANGE) {
     logger.warn('Not valid state_change event.');
@@ -189,7 +191,15 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
   }
 
   if (!data.values) {
+    // XXX second arg ignored
     logger.warn('Data has not values.');
+    logger.info(valueAttr);
+
+    // XXX none of these output
+    logger.debug(valueAttr.value);
+    logger.debug('logger.debug');
+    console.debug('console.debug', valueAttr.value);
+    console.log('console.log', valueAttr.value);
     return;
   }
 
@@ -214,13 +224,16 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     recordSaves.push(record.save());
   }
 
+  // XXX constructs a new one of each of these when none might match the path
   const psmKit = psmEventKit(block, data, module, path);
   const boardKit = boardAuxEventKit(block, data, module, path);
   const priceKit = priceFeedEventKit(block, data, module, path);
   const vaultKit = vaultsEventKit(block, data, module, path);
   const reserveKit = reservesEventKit(block, data, module, path);
+  const fastUsdcKit = transactionEventKit(block, data, module, path);
 
   const regexFunctionMap = [
+    { regex: /^published\.fastUsdc\.txns\./, function: fastUsdcKit.saveTransaction },
     { regex: /^published\.priceFeed\..+price_feed$/, function: priceKit.savePriceFeed },
     { regex: /^published\.psm\..+\.metrics$/, function: psmKit.savePsmMetrics },
     { regex: /^published\.psm\..+\.governance$/, function: psmKit.savePsmGovernance },
@@ -245,12 +258,19 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     }
 
     const value = JSON.parse(rawValue) as CapData<unknown>;
+    if (!('body' in value)) {
+      logger.warn(`skipping value that is not CapData: ${JSON.stringify(value)}`);
+      return;
+    }
+
     const payload = JSON.parse(value.body.replace(/^#/, ''));
 
     resolveBrandNamesAndValues(payload);
     try {
       for (const { regex, function: action } of regexFunctionMap) {
         if (path.match(regex)) {
+          // XXX await in loop, TODO simplify by using Promise.allSettled in handlers
+          // recordSaves.push(action(payload));
           recordSaves.push(...(await action(payload)));
           break;
         }

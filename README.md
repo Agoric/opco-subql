@@ -109,7 +109,7 @@ The fastest way to get support is by [searching our documentation](https://acade
 
 ## Developing
 
-### Locally
+### With A3P
 
 1. Start up an A3P instance
 
@@ -117,18 +117,56 @@ The fastest way to get support is by [searching our documentation](https://acade
    docker run -p 26657:26657 -p 1317:1317 -p 9090:9090 ghcr.io/agoric/agoric-3-proposals:latest
    ```
 
-2. Start up the Indexer
+   Or with a proposal that you've built in a3p-integration,
+
+   ```sh
+   docker run -p 26657:26657 -p 1317:1317 -p 9090:9090 ghcr.io/agoric/agoric-3-proposals:use-fast-usdc
+   ```
+
+2. Confirm the data is visible with [vstorage viewer](https://vstorage.agoric.net/?endpoint=http%3A%2F%2Flocalhost%3A26657)
+
+3. Start up the Indexer
    After the A3P instance is up and running, initiate the indexer with the following command:
 
    ```sh
    AGORIC_NET=docker yarn dev
    ```
 
-3. Accessing the GraphQL Interface
+4. Access the GraphQL playground
    Once the indexer is operational, access the GraphQL interface to query indexed data:
 
    - Open a web browser and navigate to http://localhost:3000.
    - Use the provided interface to write and execute your GraphQL queries.
+
+### With multichain-testing
+
+Make some transactions.
+
+```sh
+cd multichain-testing && yarn
+make setup # if you've never ran starship
+docker pull ghcr.io/agoric/agoric-sdk:dev # to make sure you have the latest IBC hooks changes
+make stop
+make start FILE=config.fusdc.yaml # wait ~7 mins
+yarn test:fast-usdc test/fast-usdc/fast-usdc.test.ts
+```
+
+View [published.fastUsdc](https://vstorage.agoric.net/?endpoint=http%3A%2F%2Flocalhost%3A26657&path=published.fastUsdc)
+
+Start a fresh indexer:
+
+```sh
+scripts/restart-dev.sh
+```
+
+Play at http://localhost:3000/
+
+Cleanup…
+
+```sh
+cd multichain-testing
+make stop
+```
 
 ### Troubleshooting the Indexer
 
