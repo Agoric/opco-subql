@@ -1,6 +1,9 @@
 /** @file test against agoric-3-proposals:latest */
 import { subqlTest } from '@subql/testing';
 import {
+  BoardAux,
+  OraclePriceDaily,
+  PsmMetricsDaily,
   ReserveAllocationMetrics,
   ReserveAllocationMetricsDaily,
   ReserveMetrics,
@@ -181,3 +184,80 @@ subqlTest(
   ],
   'handleStateChangeEvent',
 );
+
+subqlTest(
+  'BoardAux at block 643',
+  643,
+  [],
+  [
+    new BoardAux(
+      'published.boardAux.board0074',
+      BigInt(643),
+      new Date('2024-12-09T23:07:37.423Z'),
+      'Zoe Invitation',
+      'set',
+      0,
+    ),
+    new BoardAux(
+      'published.boardAux.board01744',
+      BigInt(643),
+      new Date('2024-12-09T23:07:37.423Z'),
+      'USDT_axl',
+      'nat',
+      6,
+    ),
+    new BoardAux('published.boardAux.board0257', BigInt(643), new Date('2024-12-09T23:07:37.423Z'), 'IST', 'nat', 6),
+    new BoardAux(
+      'published.boardAux.board03040',
+      BigInt(643),
+      new Date('2024-12-09T23:07:37.423Z'),
+      'USDC_axl',
+      'nat',
+      6,
+    ),
+  ],
+
+  'handleStateChangeEvent',
+);
+
+const oraclePriceDaily = new OraclePriceDaily(
+  'ATOM-USD:20241209',
+  20241209,
+  BigInt(506),
+  new Date('2024-12-09T23:03:17.000Z'),
+);
+
+oraclePriceDaily.typeInAmountLast = BigInt(1000000);
+oraclePriceDaily.typeInAmountSum = BigInt(1000000);
+oraclePriceDaily.typeOutAmountLast = BigInt(12010000);
+oraclePriceDaily.typeOutAmountSum = BigInt(12010000);
+oraclePriceDaily.typeInName = 'ATOM';
+oraclePriceDaily.typeOutName = 'USD';
+oraclePriceDaily.metricsCount = BigInt(1);
+
+subqlTest(
+  'oraclePriceDaily at block 506',
+  506,
+  [],
+  [oraclePriceDaily],
+
+  'handleStateChangeEvent',
+);
+
+const psmMetricsDaily = new PsmMetricsDaily(
+  'published.psm.IST.USDC_axl.metrics:20241207',
+  'published.psm.IST.USDC_axl.metrics',
+  20241207,
+  BigInt(35),
+  new Date('2024-12-07T02:03:32.000Z'),
+);
+
+psmMetricsDaily.denom = 'USDC_axl';
+psmMetricsDaily.anchorPoolBalanceLast = BigInt(0);
+psmMetricsDaily.feePoolBalanceLast = BigInt(0);
+psmMetricsDaily.mintedPoolBalanceLast = BigInt(0);
+psmMetricsDaily.totalAnchorProvidedLast = BigInt(0);
+psmMetricsDaily.totalMintedProvidedLast = BigInt(0);
+psmMetricsDaily.metricsCount = BigInt(1);
+
+subqlTest('psmMetricsDaily at block 35', 35, [], [psmMetricsDaily], 'handleStateChangeEvent');
