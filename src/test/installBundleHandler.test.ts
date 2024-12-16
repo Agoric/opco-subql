@@ -17,5 +17,5 @@ subqlTest(
     ),
   ],
 
-  'handleBundleInstallMessage',
+  'handleStateChangeEvent',
 );
