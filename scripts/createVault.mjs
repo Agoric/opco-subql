@@ -1,4 +1,5 @@
 #! /usr/bin/env node
+import './lockdown.mjs';
 import { execa } from 'execa';
 import assert from 'node:assert/strict';
 import { assertAllDefined } from '@agoric/internal';
