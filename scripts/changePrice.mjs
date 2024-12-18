@@ -1,5 +1,8 @@
 #! /usr/bin/env node
+<<<<<<< HEAD
 import './lockdown.mjs';
+=======
+>>>>>>> 88ebe86f (fixup! ci: validate liquidating vaults)
 import { execa } from 'execa';
 import { assertAllDefined } from '@agoric/internal';
 
