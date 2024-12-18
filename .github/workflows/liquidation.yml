@@ -124,15 +124,26 @@ jobs:
         env:
           amount: 9.99
           containerName: agd
+<<<<<<< HEAD
           AGORIC_NET: local
 
       - name: Check liquidation indexing
         run: ./scripts/checkLiquidation.mjs
+=======
+          agoricNet: local
+
+      - name: Check liquidation indexing
+        run: node .github/scripts/checkLiquidation.mjs
+>>>>>>> 5dd221d3 (ci: validate liquidating vaults)
         env:
           apiUrl: 'http://localhost:3000/'
 
       - name: Get active vaults
+<<<<<<< HEAD
         run: ./scripts/getActiveVaults.mjs
+=======
+        run: node .github/scripts/getActiveVaults.mjs
+>>>>>>> 5dd221d3 (ci: validate liquidating vaults)
         env:
           apiUrl: 'http://localhost:3000/'
           expectedVaults: 7
