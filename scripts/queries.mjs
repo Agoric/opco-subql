@@ -9,6 +9,28 @@ export const getQuery = (entity, filters) => {
   const filterString = buildFilter(filters);
 
   const queries = {
+    vaults: `query {
+        vaults ${filterString} {
+            nodes {
+              balance
+              lockedValue
+              coin
+              denom
+              debt
+              state
+            }
+        }
+    }`,
+    vaultStatesDailies: `query {
+      vaultStatesDailies ${filterString} {
+          nodes {
+              active
+              closed
+              liquidating
+              liquidated
+            }
+          }
+      }`,
     vaultManagerGovernances: `query {
           vaultManagerGovernances ${filterString} {
               nodes {
@@ -112,6 +134,20 @@ export const getQuery = (entity, filters) => {
 };
 
 export const expectations = {
+  vaults: {
+    balance: '788000000',
+    lockedValue: '788000000',
+    coin: 'ATOM',
+    denom: 'ATOM',
+    debt: '4745610000',
+    state: 'active',
+  },
+  vaultStatesDailies: {
+    active: '7',
+    closed: '3',
+    liquidating: '0',
+    liquidated: '0',
+  },
   vaultManagerGovernances: {
     id: 'published.vaultFactory.managers.manager1.governance',
     debtLimit: '1000000000',

@@ -43,6 +43,20 @@ jobs:
       - name: Wait for GraphQL server
         run: sleep 60
 
+      - name: Test Vaults
+        run: ./scripts/validateData.mjs
+        env:
+          entity: vaults
+          blockHeight: 742
+          apiUrl: 'http://localhost:3000/'
+
+      - name: Test VaultStatesDailies
+        run: ./scripts/validateData.mjs
+        env:
+          entity: vaultStatesDailies
+          blockHeight: 1161
+          apiUrl: 'http://localhost:3000/'
+
       - name: Test VaultManagerGovernance
         run: ./scripts/validateData.mjs
         env:
