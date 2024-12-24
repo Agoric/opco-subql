@@ -40,7 +40,7 @@ jobs:
       # We tried delays of 10, 20, and 30 seconds, but a 120-second delay is the most efficient
       # and ensures that the server is fully ready, without causing any issues.
       - name: Wait for GraphQL server
-        run: sleep 60
+        run: sleep 120
 
       - name: Test VaultManagerGovernance
         run: ./scripts/validateData.mjs
