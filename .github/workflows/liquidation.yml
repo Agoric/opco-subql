@@ -1,6 +1,15 @@
 name: Liquidation Indexing
 on:
+  schedule:
+    - cron: '10 1 * * *'
+  push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -128,3 +137,12 @@ jobs:
         run: ./scripts/getActiveVaults.mjs
         env:
           expectedVaults: 7
+
+      - name: Notify About Failure
+        if: >
+          failure() && github.event_name != 'pull_request' &&
+          github.repository_owner == 'agoric'
+        uses: ./.github/actions/notify-status
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
