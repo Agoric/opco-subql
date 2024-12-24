@@ -82,3 +82,12 @@ jobs:
         env:
           entity: reserveAllocationMetricsDailies
           blockHeight: 1212
+
+      - name: Notify About Failure
+        if: >
+          failure() && github.event_name != 'pull_request' &&
+          github.repository_owner == 'agoric'
+        uses: ./.github/actions/notify-status
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
