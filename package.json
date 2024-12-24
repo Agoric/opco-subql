@@ -7,7 +7,7 @@
     "build": "subql build",
     "codegen": "subql codegen",
     "start:docker": "docker-compose pull && docker-compose up --remove-orphans",
-    "dev": "subql codegen && subql build && docker-compose pull && docker-compose up --remove-orphans",
+    "dev": "subql codegen && subql build && docker compose pull && docker compose --profile default up --remove-orphans --detach",
     "prepack": "rm -rf dist && npm run build",
     "test": "subql build && subql-node-cosmos test",
     "prettier:check": "prettier --list-different . --print-width 120",
@@ -23,23 +23,28 @@
   "author": "Agoric OpCo",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@agoric/internal": "0.4.0-u18.0",
     "@cosmjs/stargate": "^0.28.9",
-    "@subql/cli": "^5.3.3",
+    "@endo/eventual-send": "^1.2.8",
+    "@subql/cli": "^5.4.0",
     "@subql/node-cosmos": "^4.2.1",
     "@subql/testing": "latest",
+    "execa": "^9.5.2",
     "prettier": "^3.4.2",
+    "ses": "^1.10.0",
     "starknet": "6.11.0",
     "typescript": "^5.7.2"
   },
   "dependencies": {
     "@subql/types-cosmos": "^4.0.0",
-    "@subql/utils": "^2.16.0",
+    "@subql/utils": "^2.17.0",
     "@types/node": "^17.0.21",
     "bech32": "^2.0.0",
     "js-sha256": "^0.11.0",
-    "pino": "^7.8.0",
-    "ts-proto": "^1.112.1",
-    "tslib": "^2.3.1"
+    "pino": "^7.8.0"
+  },
+  "resolutions": {
+    "@subql/node-core": "^16.1.0"
   },
   "packageManager": "yarn@4.5.3"
 }
