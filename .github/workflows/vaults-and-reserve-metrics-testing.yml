@@ -1,5 +1,7 @@
 name: Vaults and Reserve Indexing
 on:
+  schedule:
+    - cron: '10 1 * * *'
   push:
     branches: [main]
   pull_request:
