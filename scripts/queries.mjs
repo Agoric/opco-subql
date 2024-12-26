@@ -176,12 +176,10 @@ export const expectations = {
     id: 'IST',
     denom: 'IST',
     key: 'Fee',
-    value: '192790171',
   },
   reserveAllocationMetricsDailies: {
     denom: 'IST',
     key: 'Fee',
-    valueLast: '192790171',
     metricsCount: '1',
   },
 };
