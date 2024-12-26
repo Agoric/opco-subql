@@ -44,6 +44,13 @@ const networkConfig = {
     chaintypes: chainTypesU18,
     startBlock: 1,
   },
+  /*
+  This configuration is specifically for the "ci" profile for the agd container.
+  The reason for using the "ci" profile is because the URL http://host.docker.internal:26657
+  is not accessible in CI environments. Therefore, we added the a3p service to the Docker
+  Compose file and assigned it a "ci" profile to ensure it only runs in CI. In the CI environment,
+  we then use the address http://agd:26657
+*/
   ci: {
     chainId: 'agoriclocal',
     endpoint: ['http://a3p:26657'],

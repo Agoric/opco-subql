@@ -134,13 +134,11 @@ The fastest way to get support is by [searching our documentation](https://acade
 
 If you encounter issues with the indexer:
 
-- Check the logs for any errors or warnings that might indicate what is wrong. Use the command:
+- Check the logs of indexer for any errors or warnings that might indicate what is wrong. Use the command:
 
   ```sh
-  docker logs <container_id>
+  docker logs -f agoric-subql-subquery-node-1
   ```
-
-  Replace <container_id> with the actual ID of your Docker container involved in indexing.
 
 - If restarting the indexer is necessary, first delete the `.data` folder in the root directory to avoid conflicts or corruption of data:
 
