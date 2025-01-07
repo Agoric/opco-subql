@@ -63,7 +63,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: StreamCell, module: str
     oldState: string | undefined,
     newState: string,
     blockTime: ReadonlyDateWithNanoseconds,
-    blockHeight: number,
+    blockHeight: string,
   ): Promise<[VaultStatesDaily, VaultStatesDaily]> {
     let vaultState: VaultStatesDaily | undefined = await VaultStatesDaily.get('latest');
 
@@ -129,10 +129,15 @@ export const vaultsEventKit = (block: CosmosBlock, data: StreamCell, module: str
       vault = new Vault(path, BigInt(data.blockHeight), block.block.header.time as Date, '');
     }
 
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.coin = payload?.locked?.__brand;
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.denom = payload?.locked?.__brand;
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.debt = BigInt(payload?.debtSnapshot?.debt?.__value);
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.balance = BigInt(payload?.locked?.__value);
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.lockedValue = BigInt(payload?.locked?.__value);
     vault.state = payload?.vaultState;
 
@@ -148,6 +153,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: StreamCell, module: str
     const id = `${path}-${payload?.vaultState}`;
     const liquidatingId = `${path}-${VAULT_STATES.LIQUIDATING}`;
 
+    // @ts-expect-error see resolveBrandNamesAndValues
     const denom = payload?.locked?.__brand;
 
     let vault = await VaultLiquidation.get(id);
@@ -187,8 +193,11 @@ export const vaultsEventKit = (block: CosmosBlock, data: StreamCell, module: str
 
     vault.coin = denom;
     vault.denom = denom;
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.debt = payload?.debtSnapshot?.debt?.__value;
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.balance = payload?.locked?.__value;
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.lockedValue = payload?.locked?.__value;
     vault.state = payload?.vaultState;
     return vault.save();

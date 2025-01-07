@@ -11,12 +11,17 @@
     "rootDir": "src",
     "target": "es2017",
     "strict": true,
+    "noImplicitAny": false,
     // UNTIL package-json-type and ejs packages have types
     "skipLibCheck": true,
     "lib": ["es2021"]
   },
+  "exclude": [
+    // generated code has typecheck error
+    "src/types/proto-interfaces/**",
+  ],
   "include": [
-    "src/**/*",
+    "src",
     "node_modules/@subql/types-core/dist/global.d.ts",
     "node_modules/@subql/types-cosmos/dist/global.d.ts"
   ]
