@@ -1,7 +1,8 @@
+import type { CosmosBlock } from '@subql/types-cosmos';
 import { OraclePrice, OraclePriceDaily } from '../../types';
 import { dateToDayKey } from '../utils';
 
-export const priceFeedEventKit = (block: any, data: any, module: string, path: string) => {
+export const priceFeedEventKit = (block: CosmosBlock, data: any, module: string, path: string) => {
   async function savePriceFeed(payload: any): Promise<Promise<any>[]> {
     const matchTypeInName = path.match(/priceFeed\.(.+?)-/);
     const typeInName = matchTypeInName ? matchTypeInName[1] : undefined;

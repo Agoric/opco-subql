@@ -1,17 +1,18 @@
+import type { CosmosBlock } from '@subql/types-cosmos';
 import {
-  VaultManagerMetrics,
-  VaultManagerMetricsDaily,
-  VaultManagerGovernance,
-  Wallet,
+  OraclePrice,
   Vault,
   VaultLiquidation,
+  VaultManagerGovernance,
+  VaultManagerMetrics,
+  VaultManagerMetricsDaily,
   VaultStatesDaily,
-  OraclePrice,
+  Wallet,
 } from '../../types';
 import { VAULT_STATES } from '../constants';
 import { dateToDayKey, extractBrand } from '../utils';
 
-export const vaultsEventKit = (block: any, data: any, module: string, path: string) => {
+export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, path: string) => {
   async function saveVaultManagerGovernance(payload: any): Promise<Promise<any>[]> {
     const vaultManagerGovernance = new VaultManagerGovernance(
       path,

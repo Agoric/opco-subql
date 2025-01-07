@@ -1,8 +1,8 @@
-import { promises } from 'dns';
 import { ReserveAllocationMetrics, ReserveAllocationMetricsDaily, ReserveMetrics } from '../../types';
 import { dateToDayKey, extractBrand } from '../utils';
+import type { CosmosBlock } from '@subql/types-cosmos';
 
-export const reservesEventKit = (block: any, data: any, module: string, path: string) => {
+export const reservesEventKit = (block: CosmosBlock, data: any, module: string, path: string) => {
   async function saveReserveMetrics(payload: any): Promise<Promise<any>[]> {
     const promises: Promise<void>[] = [];
     const reserveMetric = new ReserveMetrics(

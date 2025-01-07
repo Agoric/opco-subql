@@ -1,6 +1,7 @@
+import type { CosmosBlock } from '@subql/types-cosmos';
 import { BoardAux } from '../../types';
 
-export const boardAuxEventKit = (block: any, data: any, module: string, path: string) => {
+export const boardAuxEventKit = (block: CosmosBlock, data: any, module: string, path: string) => {
   async function saveBoardAux(payload: any): Promise<Promise<any>[]> {
     const boardAux = new BoardAux(
       path,

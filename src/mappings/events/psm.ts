@@ -1,7 +1,8 @@
+import type { CosmosBlock } from '@subql/types-cosmos';
 import { PsmGovernance, PsmMetrics, PsmMetricsDaily } from '../../types';
 import { dateToDayKey } from '../utils';
 
-export const psmEventKit = (block: any, data: any, module: string, path: string) => {
+export const psmEventKit = (block: CosmosBlock, data: any, module: string, path: string) => {
   async function savePsmMetrics(payload: any): Promise<Promise<any>[]> {
     const psmMetricDaily = savePsmMetricDaily(payload);
     const psmMetric = new PsmMetrics(
