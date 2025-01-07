@@ -31,6 +31,8 @@ import { boardAuxEventKit } from './events/boardAux';
 import { priceFeedEventKit } from './events/priceFeed';
 import { vaultsEventKit } from './events/vaults';
 import { reservesEventKit } from './events/reserves';
+import type { StreamCell } from '@agoric/internal/src/lib-chainStorage';
+import type { CapData } from '@endo/marshal';
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -178,7 +180,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     return;
   }
 
-  let data = Object();
+  let data: StreamCell<string>;
   try {
     const decodedValue = valueAttr.key === UNPROVED_VALUE_KEY ? b64decode(valueAttr.value) : valueAttr.value;
     data = JSON.parse(decodedValue);
@@ -197,7 +199,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
 
   const recordSaves: (Promise<void> | undefined)[] = [];
 
-  async function saveStateEvent(idx: number, value: any, payload: any) {
+  async function saveStateEvent(idx: number, value: CapData<unknown>, payload: unknown) {
     const record = new StateChangeEvent(
       `${data.blockHeight}:${cosmosEvent.idx}:${idx}`,
       BigInt(data.blockHeight),
@@ -242,7 +244,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
       continue;
     }
 
-    const value = JSON.parse(rawValue);
+    const value = JSON.parse(rawValue) as CapData<unknown>;
     const payload = JSON.parse(value.body.replace(/^#/, ''));
 
     resolveBrandNamesAndValues(payload);

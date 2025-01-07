@@ -12,8 +12,9 @@ import {
 } from '../../types';
 import { VAULT_STATES } from '../constants';
 import { dateToDayKey, extractBrand } from '../utils';
+import type { StreamCell } from '@agoric/internal/src/lib-chainStorage';
 
-export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, path: string) => {
+export const vaultsEventKit = (block: CosmosBlock, data: StreamCell, module: string, path: string) => {
   async function saveVaultManagerGovernance(payload: any): Promise<Promise<any>[]> {
     const vaultManagerGovernance = new VaultManagerGovernance(
       path,
