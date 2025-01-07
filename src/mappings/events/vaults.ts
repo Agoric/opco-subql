@@ -1,4 +1,5 @@
 import type { CosmosBlock } from '@subql/types-cosmos';
+import type { ReadonlyDateWithNanoseconds } from '@cosmjs/tendermint-rpc';
 import {
   OraclePrice,
   Vault,
@@ -17,7 +18,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, pa
     const vaultManagerGovernance = new VaultManagerGovernance(
       path,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       BigInt(payload.current.DebtLimit.value.__value),
       BigInt(payload.current.InterestRate.value?.denominator.__value ?? 0),
       BigInt(payload.current.InterestRate.value?.numerator.__value ?? 0),
@@ -37,7 +38,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, pa
   async function saveWallets(payload: any): Promise<Promise<any>[]> {
     const promises: Promise<void>[] = [];
     const address = path.split('.')[2];
-    const wallet = new Wallet(path, BigInt(data.blockHeight), block.block.header.time as any, address);
+    const wallet = new Wallet(path, BigInt(data.blockHeight), block.block.header.time as Date, address);
 
     if (payload.offerToPublicSubscriberPaths) {
       for (let i = 0; i < payload.offerToPublicSubscriberPaths.length; i++) {
@@ -45,7 +46,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, pa
 
         let vault = await Vault.get(vaultId);
         if (!vault) {
-          vault = new Vault(vaultId, BigInt(data.blockHeight), block.block.header.time as any, wallet.id);
+          vault = new Vault(vaultId, BigInt(data.blockHeight), block.block.header.time as Date, wallet.id);
         }
         vault.walletId = wallet.id;
         promises.push(vault.save());
@@ -58,7 +59,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, pa
   async function updateVaultStatesDaily(
     oldState: string | undefined,
     newState: string,
-    blockTime: Date,
+    blockTime: ReadonlyDateWithNanoseconds,
     blockHeight: number,
   ): Promise<[VaultStatesDaily, VaultStatesDaily]> {
     let vaultState: VaultStatesDaily | undefined = await VaultStatesDaily.get('latest');
@@ -67,7 +68,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, pa
       vaultState = new VaultStatesDaily(
         'latest',
         BigInt(blockHeight),
-        blockTime,
+        blockTime as Date,
         BigInt(0),
         BigInt(0),
         BigInt(0),
@@ -85,7 +86,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, pa
     };
 
     vaultState.blockHeightLast = BigInt(blockHeight);
-    vaultState.blockTimeLast = blockTime;
+    vaultState.blockTimeLast = blockTime as Date;
 
     if (oldState && propertyMap[oldState]) {
       const oldProperty = propertyMap[oldState];
@@ -122,7 +123,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, pa
       data.blockHeight,
     );
     if (!vault) {
-      vault = new Vault(path, BigInt(data.blockHeight), block.block.header.time as any, '');
+      vault = new Vault(path, BigInt(data.blockHeight), block.block.header.time as Date, '');
     }
 
     vault.coin = payload?.locked?.__brand;
@@ -151,7 +152,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, pa
       vault = new VaultLiquidation(
         id,
         BigInt(data.blockHeight),
-        block.block.header.time as any,
+        block.block.header.time as Date,
         '',
         path,
         liquidatingId,
@@ -196,7 +197,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, pa
     const vaultManagerMetric = new VaultManagerMetrics(
       path,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       extractBrand(payload.liquidatingCollateral.__brand),
       BigInt(payload.liquidatingCollateral.__value),
       extractBrand(payload.liquidatingDebt.__brand),
@@ -250,7 +251,13 @@ export const vaultsEventKit = (block: CosmosBlock, data: any, module: string, pa
     const id = `${path}:${dateKey}`;
     let state = await VaultManagerMetricsDaily.get(id);
     if (!state) {
-      state = new VaultManagerMetricsDaily(id, path, dateKey, BigInt(data.blockHeight), block.block.header.time as any);
+      state = new VaultManagerMetricsDaily(
+        id,
+        path,
+        dateKey,
+        BigInt(data.blockHeight),
+        block.block.header.time as Date,
+      );
       return state;
     }
     return state;

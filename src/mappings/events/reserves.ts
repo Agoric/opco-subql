@@ -8,7 +8,7 @@ export const reservesEventKit = (block: CosmosBlock, data: any, module: string, 
     const reserveMetric = new ReserveMetrics(
       path,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       BigInt(payload.shortfallBalance.__value),
       BigInt(payload.totalFeeBurned.__value),
       BigInt(payload.totalFeeMinted.__value),
@@ -26,7 +26,7 @@ export const reservesEventKit = (block: CosmosBlock, data: any, module: string, 
         const reserveAllocationMetric = new ReserveAllocationMetrics(
           `${brand}`,
           BigInt(data.blockHeight),
-          block.block.header.time as any,
+          block.block.header.time as Date,
           brand,
           key,
           BigInt(allocation.__value),
@@ -69,7 +69,7 @@ export const reservesEventKit = (block: CosmosBlock, data: any, module: string, 
         brand,
         dateKey,
         BigInt(data.blockHeight),
-        new Date(block.block.header.time as any),
+        new Date(block.block.header.time as Date),
       );
     }
     return state;

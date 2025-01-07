@@ -8,7 +8,7 @@ export const psmEventKit = (block: CosmosBlock, data: any, module: string, path:
     const psmMetric = new PsmMetrics(
       path,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       path.split('.')[3],
       path.split('.')[3],
       BigInt(payload.anchorPoolBalance.__value),
@@ -48,7 +48,7 @@ export const psmEventKit = (block: CosmosBlock, data: any, module: string, path:
         path,
         dateKey,
         BigInt(data.blockHeight),
-        new Date(block.block.header.time as any),
+        new Date(block.block.header.time as Date),
       );
     }
     return state;
@@ -58,7 +58,7 @@ export const psmEventKit = (block: CosmosBlock, data: any, module: string, path:
     const psmGovernance = new PsmGovernance(
       path,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       path.split('.')[3],
       path.split('.')[3],
       BigInt(payload.current.MintLimit.value.__value),

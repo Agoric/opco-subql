@@ -18,7 +18,7 @@ export const priceFeedEventKit = (block: CosmosBlock, data: any, module: string,
       const oraclePrice = new OraclePrice(
         id,
         BigInt(data.blockHeight),
-        block.block.header.time as any,
+        block.block.header.time as Date,
         id,
         BigInt(payload.amountIn.__value),
         BigInt(payload.amountOut.__value),
@@ -53,7 +53,7 @@ export const priceFeedEventKit = (block: CosmosBlock, data: any, module: string,
     const id = feedName + ':' + dateKey.toString();
     let state = await OraclePriceDaily.get(id);
     if (!state) {
-      state = new OraclePriceDaily(id, dateKey, BigInt(data.blockHeight), new Date(block.block.header.time as any));
+      state = new OraclePriceDaily(id, dateKey, BigInt(data.blockHeight), new Date(block.block.header.time as Date));
     }
     return state;
   }

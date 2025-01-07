@@ -6,7 +6,7 @@ export const boardAuxEventKit = (block: CosmosBlock, data: any, module: string, 
     const boardAux = new BoardAux(
       path,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       payload.allegedName,
       payload.displayInfo.assetKind,
       payload.displayInfo.decimalPlaces ?? 0,

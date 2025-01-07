@@ -74,7 +74,7 @@ export async function handleIbcSendPacketEvent(cosmosEvent: CosmosEvent): Promis
 
   const transferRecord = new IBCTransfer(
     tx.hash,
-    block.header.time as any,
+    block.header.time as Date,
     BigInt(block.header.height),
     packetSrcChannelAttr.value,
     sender,
@@ -117,7 +117,7 @@ export async function handleIbcReceivePacketEvent(cosmosEvent: CosmosEvent): Pro
 
   const transferRecord = new IBCTransfer(
     tx.hash,
-    block.header.time as any,
+    block.header.time as Date,
     BigInt(block.header.height),
     destinationChannel,
     sender,
@@ -143,7 +143,7 @@ export async function handleBundleInstallMessage(message: CosmosMessage): Promis
   const bundleRecord = new BundleInstall(
     tx.hash,
     BigInt(block.header.height),
-    block.header.time as any,
+    block.header.time as Date,
     BigInt(uncompressedSize),
     bundle || '',
     compressedBundle || '',
@@ -201,7 +201,7 @@ export async function handleStateChangeEvent(cosmosEvent: CosmosEvent): Promise<
     const record = new StateChangeEvent(
       `${data.blockHeight}:${cosmosEvent.idx}:${idx}`,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       module,
       path,
       idx,
