@@ -23,7 +23,9 @@
   "author": "Agoric OpCo",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@agoric/internal": "0.4.0-u18.0",
+    "@agoric/inter-protocol": "0.17.0-u18.6",
+    "@agoric/internal": "0.4.0-u18.1",
+    "@agoric/smart-wallet": "0.5.4-u18.5",
     "@cosmjs/stargate": "^0.28.9",
     "@endo/eventual-send": "^1.2.8",
     "@subql/cli": "^5.4.0",

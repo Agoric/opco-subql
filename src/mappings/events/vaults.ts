@@ -1,4 +1,6 @@
 import type { CosmosBlock } from '@subql/types-cosmos';
+import type { CurrentWalletRecord } from '@agoric/smart-wallet/src/smartWallet';
+import type { VaultNotification } from '@agoric/inter-protocol/src/vaultFactory/vault';
 import type { ReadonlyDateWithNanoseconds } from '@cosmjs/tendermint-rpc';
 import {
   OraclePrice,
@@ -36,7 +38,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: StreamCell, module: str
     return [vaultManagerGovernance];
   }
 
-  async function saveWallets(payload: any): Promise<Promise<any>[]> {
+  async function saveWallets(payload: CurrentWalletRecord): Promise<Promise<any>[]> {
     const promises: Promise<void>[] = [];
     const address = path.split('.')[2];
     const wallet = new Wallet(path, BigInt(data.blockHeight), block.block.header.time as Date, address);
@@ -115,7 +117,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: StreamCell, module: str
     return [vaultState, vaultStateToday];
   }
 
-  async function saveVaults(payload: any): Promise<Promise<any>[]> {
+  async function saveVaults(payload: VaultNotification): Promise<Promise<any>[]> {
     let vault = await Vault.get(path);
     const [latestVaultState, dailyVaultState] = await updateVaultStatesDaily(
       vault?.state,
@@ -142,7 +144,7 @@ export const vaultsEventKit = (block: CosmosBlock, data: StreamCell, module: str
     return [liquidation, vault.save(), latestVaultState.save(), dailyVaultState.save()];
   }
 
-  async function saveVaultsLiquidation(payload: any): Promise<any> {
+  async function saveVaultsLiquidation(payload: VaultNotification): Promise<any> {
     const id = `${path}-${payload?.vaultState}`;
     const liquidatingId = `${path}-${VAULT_STATES.LIQUIDATING}`;
 
