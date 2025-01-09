@@ -72,7 +72,7 @@ services:
       - ci
 
   a3p:
-    image: ghcr.io/agoric/agoric-3-proposals:use-upgrade-17
+    image: ghcr.io/agoric/agoric-3-proposals:use-upgrade-17@sha256:08d50e6db60b26c452c1f495205c72bdff64fbb10044db2bd4eb4a3f8b255c83
     container_name: agd
     ports:
       - 26657:26657

@@ -51,41 +51,41 @@ jobs:
       - name: Wait for GraphQL server
         run: sleep 60
 
-      # - name: Test VaultManagerGovernance
-      #   run: ./scripts/validateData.mjs
-      #   env:
-      #     entity: vaultManagerGovernances
-      #     blockHeight: 1178
+      - name: Test VaultManagerGovernance
+        run: ./scripts/validateData.mjs
+        env:
+          entity: vaultManagerGovernances
+          blockHeight: 1185
 
-      # - name: Test VaultManagerMetrics
-      #   run: ./scripts/validateData.mjs
-      #   env:
-      #     entity: vaultManagerMetrics
-      #     blockHeight: 1170
+      - name: Test VaultManagerMetrics
+        run: ./scripts/validateData.mjs
+        env:
+          entity: vaultManagerMetrics
+          blockHeight: 1226
 
       - name: Test VaultManagerMetricsDaily
         run: ./scripts/validateData.mjs
         env:
           entity: vaultManagerMetricsDailies
-          blockHeight: 1231
+          blockHeight: 1226
 
       - name: Test ReserveMetrics
         run: ./scripts/validateData.mjs
         env:
           entity: reserveMetrics
-          blockHeight: 1231
+          blockHeight: 1226
 
       - name: Test ReserveAllocationMetrics
         run: ./scripts/validateData.mjs
         env:
           entity: reserveAllocationMetrics
-          blockHeight: 1231
+          blockHeight: 1226
 
       - name: Test ReserveAllocationMetricsDaily
         run: ./scripts/validateData.mjs
         env:
           entity: reserveAllocationMetricsDailies
-          blockHeight: 1231
+          blockHeight: 1226
 
       - name: Notify About Failure
         if: >
