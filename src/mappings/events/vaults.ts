@@ -1,22 +1,27 @@
+import type { CosmosBlock } from '@subql/types-cosmos';
+import type { CurrentWalletRecord } from '@agoric/smart-wallet/src/smartWallet';
+import type { VaultNotification } from '@agoric/inter-protocol/src/vaultFactory/vault';
+import type { ReadonlyDateWithNanoseconds } from '@cosmjs/tendermint-rpc';
 import {
-  VaultManagerMetrics,
-  VaultManagerMetricsDaily,
-  VaultManagerGovernance,
-  Wallet,
+  OraclePrice,
   Vault,
   VaultLiquidation,
+  VaultManagerGovernance,
+  VaultManagerMetrics,
+  VaultManagerMetricsDaily,
   VaultStatesDaily,
-  OraclePrice,
+  Wallet,
 } from '../../types';
 import { VAULT_STATES } from '../constants';
 import { dateToDayKey, extractBrand } from '../utils';
+import type { StreamCell } from '@agoric/internal/src/lib-chainStorage';
 
-export const vaultsEventKit = (block: any, data: any, module: string, path: string) => {
+export const vaultsEventKit = (block: CosmosBlock, data: StreamCell, module: string, path: string) => {
   async function saveVaultManagerGovernance(payload: any): Promise<Promise<any>[]> {
     const vaultManagerGovernance = new VaultManagerGovernance(
       path,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       BigInt(payload.current.DebtLimit.value.__value),
       BigInt(payload.current.InterestRate.value?.denominator.__value ?? 0),
       BigInt(payload.current.InterestRate.value?.numerator.__value ?? 0),
@@ -33,10 +38,10 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     return [vaultManagerGovernance];
   }
 
-  async function saveWallets(payload: any): Promise<Promise<any>[]> {
+  async function saveWallets(payload: CurrentWalletRecord): Promise<Promise<any>[]> {
     const promises: Promise<void>[] = [];
     const address = path.split('.')[2];
-    const wallet = new Wallet(path, BigInt(data.blockHeight), block.block.header.time as any, address);
+    const wallet = new Wallet(path, BigInt(data.blockHeight), block.block.header.time as Date, address);
 
     if (payload.offerToPublicSubscriberPaths) {
       for (let i = 0; i < payload.offerToPublicSubscriberPaths.length; i++) {
@@ -44,7 +49,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
 
         let vault = await Vault.get(vaultId);
         if (!vault) {
-          vault = new Vault(vaultId, BigInt(data.blockHeight), block.block.header.time as any, wallet.id);
+          vault = new Vault(vaultId, BigInt(data.blockHeight), block.block.header.time as Date, wallet.id);
         }
         vault.walletId = wallet.id;
         promises.push(vault.save());
@@ -57,8 +62,8 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
   async function updateVaultStatesDaily(
     oldState: string | undefined,
     newState: string,
-    blockTime: Date,
-    blockHeight: number,
+    blockTime: ReadonlyDateWithNanoseconds,
+    blockHeight: string,
   ): Promise<[VaultStatesDaily, VaultStatesDaily]> {
     let vaultState: VaultStatesDaily | undefined = await VaultStatesDaily.get('latest');
 
@@ -66,7 +71,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       vaultState = new VaultStatesDaily(
         'latest',
         BigInt(blockHeight),
-        blockTime,
+        blockTime as Date,
         BigInt(0),
         BigInt(0),
         BigInt(0),
@@ -84,7 +89,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     };
 
     vaultState.blockHeightLast = BigInt(blockHeight);
-    vaultState.blockTimeLast = blockTime;
+    vaultState.blockTimeLast = blockTime as Date;
 
     if (oldState && propertyMap[oldState]) {
       const oldProperty = propertyMap[oldState];
@@ -112,7 +117,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     return [vaultState, vaultStateToday];
   }
 
-  async function saveVaults(payload: any): Promise<Promise<any>[]> {
+  async function saveVaults(payload: VaultNotification): Promise<Promise<any>[]> {
     let vault = await Vault.get(path);
     const [latestVaultState, dailyVaultState] = await updateVaultStatesDaily(
       vault?.state,
@@ -121,13 +126,18 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       data.blockHeight,
     );
     if (!vault) {
-      vault = new Vault(path, BigInt(data.blockHeight), block.block.header.time as any, '');
+      vault = new Vault(path, BigInt(data.blockHeight), block.block.header.time as Date, '');
     }
 
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.coin = payload?.locked?.__brand;
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.denom = payload?.locked?.__brand;
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.debt = BigInt(payload?.debtSnapshot?.debt?.__value);
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.balance = BigInt(payload?.locked?.__value);
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.lockedValue = BigInt(payload?.locked?.__value);
     vault.state = payload?.vaultState;
 
@@ -139,10 +149,11 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     return [liquidation, vault.save(), latestVaultState.save(), dailyVaultState.save()];
   }
 
-  async function saveVaultsLiquidation(payload: any): Promise<any> {
+  async function saveVaultsLiquidation(payload: VaultNotification): Promise<any> {
     const id = `${path}-${payload?.vaultState}`;
     const liquidatingId = `${path}-${VAULT_STATES.LIQUIDATING}`;
 
+    // @ts-expect-error see resolveBrandNamesAndValues
     const denom = payload?.locked?.__brand;
 
     let vault = await VaultLiquidation.get(id);
@@ -150,7 +161,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
       vault = new VaultLiquidation(
         id,
         BigInt(data.blockHeight),
-        block.block.header.time as any,
+        block.block.header.time as Date,
         '',
         path,
         liquidatingId,
@@ -182,8 +193,11 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
 
     vault.coin = denom;
     vault.denom = denom;
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.debt = payload?.debtSnapshot?.debt?.__value;
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.balance = payload?.locked?.__value;
+    // @ts-expect-error see resolveBrandNamesAndValues
     vault.lockedValue = payload?.locked?.__value;
     vault.state = payload?.vaultState;
     return vault.save();
@@ -195,7 +209,7 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     const vaultManagerMetric = new VaultManagerMetrics(
       path,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       extractBrand(payload.liquidatingCollateral.__brand),
       BigInt(payload.liquidatingCollateral.__value),
       extractBrand(payload.liquidatingDebt.__brand),
@@ -249,7 +263,13 @@ export const vaultsEventKit = (block: any, data: any, module: string, path: stri
     const id = `${path}:${dateKey}`;
     let state = await VaultManagerMetricsDaily.get(id);
     if (!state) {
-      state = new VaultManagerMetricsDaily(id, path, dateKey, BigInt(data.blockHeight), block.block.header.time as any);
+      state = new VaultManagerMetricsDaily(
+        id,
+        path,
+        dateKey,
+        BigInt(data.blockHeight),
+        block.block.header.time as Date,
+      );
       return state;
     }
     return state;

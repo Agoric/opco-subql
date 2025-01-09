@@ -1,5 +1,6 @@
 {
   "name": "agoric-indexer",
+  "private": true,
   "version": "0.0.1",
   "description": "This is the SubQuery project for indexing the Agoric chain",
   "main": "dist/index.js",
@@ -8,7 +9,6 @@
     "codegen": "subql codegen",
     "start:docker": "docker-compose pull && docker-compose up --remove-orphans",
     "dev": "subql codegen && subql build && docker compose pull && docker compose --profile default up --remove-orphans --detach",
-    "prepack": "rm -rf dist && npm run build",
     "test": "subql build && subql-node-cosmos test",
     "prettier:check": "prettier --list-different . --print-width 120",
     "prettier:write": "prettier --write . --print-width 120"
@@ -23,7 +23,10 @@
   "author": "Agoric OpCo",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@agoric/internal": "0.4.0-u18.0",
+    "@agoric/fast-usdc": "0.2.0-u18.0",
+    "@agoric/inter-protocol": "0.17.0-u18.6",
+    "@agoric/internal": "0.4.0-u18.1",
+    "@agoric/smart-wallet": "0.5.4-u18.5",
     "@cosmjs/stargate": "^0.28.9",
     "@endo/eventual-send": "^1.2.8",
     "@subql/cli": "^5.4.0",
@@ -46,5 +49,5 @@
   "resolutions": {
     "@subql/node-core": "^16.1.0"
   },
-  "packageManager": "yarn@4.5.3"
+  "packageManager": "yarn@4.6.0"
 }

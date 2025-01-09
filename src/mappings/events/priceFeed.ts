@@ -1,7 +1,9 @@
+import type { CosmosBlock } from '@subql/types-cosmos';
 import { OraclePrice, OraclePriceDaily } from '../../types';
 import { dateToDayKey } from '../utils';
+import type { StreamCell } from '@agoric/internal/src/lib-chainStorage';
 
-export const priceFeedEventKit = (block: any, data: any, module: string, path: string) => {
+export const priceFeedEventKit = (block: CosmosBlock, data: StreamCell, module: string, path: string) => {
   async function savePriceFeed(payload: any): Promise<Promise<any>[]> {
     const matchTypeInName = path.match(/priceFeed\.(.+?)-/);
     const typeInName = matchTypeInName ? matchTypeInName[1] : undefined;
@@ -17,7 +19,7 @@ export const priceFeedEventKit = (block: any, data: any, module: string, path: s
       const oraclePrice = new OraclePrice(
         id,
         BigInt(data.blockHeight),
-        block.block.header.time as any,
+        block.block.header.time as Date,
         id,
         BigInt(payload.amountIn.__value),
         BigInt(payload.amountOut.__value),
@@ -52,7 +54,7 @@ export const priceFeedEventKit = (block: any, data: any, module: string, path: s
     const id = feedName + ':' + dateKey.toString();
     let state = await OraclePriceDaily.get(id);
     if (!state) {
-      state = new OraclePriceDaily(id, dateKey, BigInt(data.blockHeight), new Date(block.block.header.time as any));
+      state = new OraclePriceDaily(id, dateKey, BigInt(data.blockHeight), new Date(block.block.header.time as Date));
     }
     return state;
   }

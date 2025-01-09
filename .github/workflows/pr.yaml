@@ -49,7 +49,7 @@ jobs:
       - name: Codegen
         run: yarn codegen
       # After codegen because that makes src/types/
-      - run: yarn tsc
+      - run: yarn tsc --project typecheck.tsconfig.json
       - name: Build
         run: yarn build
         env:

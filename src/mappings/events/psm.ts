@@ -1,13 +1,15 @@
+import type { CosmosBlock } from '@subql/types-cosmos';
 import { PsmGovernance, PsmMetrics, PsmMetricsDaily } from '../../types';
 import { dateToDayKey } from '../utils';
+import type { StreamCell } from '@agoric/internal/src/lib-chainStorage';
 
-export const psmEventKit = (block: any, data: any, module: string, path: string) => {
+export const psmEventKit = (block: CosmosBlock, data: StreamCell, module: string, path: string) => {
   async function savePsmMetrics(payload: any): Promise<Promise<any>[]> {
     const psmMetricDaily = savePsmMetricDaily(payload);
     const psmMetric = new PsmMetrics(
       path,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       path.split('.')[3],
       path.split('.')[3],
       BigInt(payload.anchorPoolBalance.__value),
@@ -47,7 +49,7 @@ export const psmEventKit = (block: any, data: any, module: string, path: string)
         path,
         dateKey,
         BigInt(data.blockHeight),
-        new Date(block.block.header.time as any),
+        new Date(block.block.header.time as Date),
       );
     }
     return state;
@@ -57,7 +59,7 @@ export const psmEventKit = (block: any, data: any, module: string, path: string)
     const psmGovernance = new PsmGovernance(
       path,
       BigInt(data.blockHeight),
-      block.block.header.time as any,
+      block.block.header.time as Date,
       path.split('.')[3],
       path.split('.')[3],
       BigInt(payload.current.MintLimit.value.__value),

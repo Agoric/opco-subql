@@ -48,7 +48,7 @@ services:
       - ci
 
   graphql-engine:
-    image: onfinality/subql-query:v2.13.0
+    image: onfinality/subql-query:v2.19.0
     ports:
       - 3000:3000
     depends_on:
