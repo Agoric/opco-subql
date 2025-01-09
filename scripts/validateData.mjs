@@ -18,6 +18,7 @@ const filter = dailyEntities.includes(entity) ? { blockHeightLast: blockHeight }
 
 try {
   const graphqlQuery = { query: getQuery(entity, filter) };
+  console.log('Fetch data for query:', graphqlQuery.query);
 
   const response = await fetch(apiUrl, {
     method: 'POST',

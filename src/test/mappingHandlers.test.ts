@@ -7,39 +7,43 @@ import {
   PsmGovernance,
   PsmMetrics,
   PsmMetricsDaily,
-  ReserveAllocationMetrics,
-  ReserveAllocationMetricsDaily,
-  ReserveMetrics,
   StateChangeEvent,
   Vault,
-  VaultManagerGovernance,
-  VaultManagerMetrics,
-  VaultManagerMetricsDaily,
   VaultStatesDaily,
   Wallet,
 } from '../types';
 
 // FIXME observed in A3P:latest but not passing tests
 subqlTest(
-  'StateChangeEvent in state_change at block 627',
-  627,
+  'StateChangeEvent in state_change at block 85',
+  85,
+  [],
+  [
+    new StateChangeEvent(
+      '85:97:4',
+      BigInt(85),
+      new Date('2024-12-26T12:53:10.730'),
+      'published.wallet',
+      'published.wallet.agoric1rwwley550k9mmk6uq6mm6z4udrg8kyuyvfszjk',
+      4,
+      '["board0223"]',
+      '{"currentAmount":{"brand":{"@qclass":"slot","iface":"Alleged: USDC_axl brand","index":0},"value":{"@qclass":"bigint","digits":"0"},"__brand":"USDC_axl","__value":"0"},"updated":"balance"}',
+    ),
+  ],
+
+  'handleStateChangeEvent',
+);
+
+subqlTest(
+  'Wallet existence on height 1133',
+  1133,
   [],
   [
     new Wallet(
       'published.wallet.agoric1rwwley550k9mmk6uq6mm6z4udrg8kyuyvfszjk.current',
-      BigInt(627),
-      new Date('2024-12-09T23:07:18.273Z'),
+      BigInt(1133),
+      new Date('2024-12-26T13:26:39.5'),
       'agoric1rwwley550k9mmk6uq6mm6z4udrg8kyuyvfszjk',
-    ),
-    new StateChangeEvent(
-      '627:39:3',
-      BigInt(627),
-      new Date('2024-12-09T23:07:18.273Z'),
-      'published.wallet',
-      'published.wallet.agoric1rwwley550k9mmk6uq6mm6z4udrg8kyuyvfszjk.current',
-      3,
-      '["board05557","board0257","board0074",null,"board05815","board00360"]',
-      '{"liveOffers":[["openVault-1733785637736",{"id":"openVault-1733785637736","invitationSpec":{"callPipe":[["getCollateralManager",["$0.Alleged: ATOM brand"]],["makeVaultInvitation"]],"instancePath":["VaultFactory"],"source":"agoricContract"},"proposal":{"give":{"Collateral":{"brand":"$0","value":"+583000000","__brand":"ATOM","__value":"583000000"}},"want":{"Minted":{"brand":"$1.Alleged: IST brand","value":"+3489000000","__brand":"IST","__value":"3489000000"}}}}]],"offerToPublicSubscriberPaths":[["openVault-1733785637736",{"vault":"published.vaultFactory.managers.manager0.vaults.vault4"}]],"offerToUsedInvitation":[["openVault-1733785637736",{"brand":"$2.Alleged: Zoe Invitation brand","value":[{"description":"manager0: MakeVault","handle":"$3.Alleged: InvitationHandle","installation":"$4.Alleged: BundleIDInstallation","instance":"$5.Alleged: InstanceHandle","__handle":"InvitationHandle","__installation":"BundleIDInstallation","__instance":"InstanceHandle"}],"__brand":"Zoe Invitation"}]],"purses":[{"balance":{"brand":"$2","value":[],"__brand":"Zoe Invitation"},"brand":"$2","__brand":"Zoe Invitation"}]}',
     ),
   ],
 
@@ -48,8 +52,8 @@ subqlTest(
 
 const vault = new Vault(
   'published.vaultFactory.managers.manager0.vaults.vault6',
-  BigInt(742),
-  new Date('2024-12-09 23:13:19.186'),
+  BigInt(1149),
+  new Date('2024-12-26T13:28:09.172'),
   'published.wallet.agoric1ee9hr0jyrxhy999y755mp862ljgycmwyp4pl7q.current',
 );
 
@@ -61,15 +65,15 @@ vault.debt = BigInt(4745610000);
 vault.state = 'active';
 
 subqlTest(
-  'Vault and VaultStateDailies at height 742',
-  742,
+  'Vault and VaultStateDailies at height 1149',
+  1149,
   [],
   [
     vault,
     new VaultStatesDaily(
-      '20241209',
-      BigInt(742),
-      new Date('2024-12-09 23:13:19.186'),
+      '20241226',
+      BigInt(1149),
+      new Date('2024-12-26T13:28:09.172'),
       BigInt(1),
       BigInt(0),
       BigInt(0),
@@ -82,31 +86,31 @@ subqlTest(
 );
 
 subqlTest(
-  'BoardAux at block 643',
-  643,
+  'BoardAux at block 652',
+  652,
   [],
   [
     new BoardAux(
       'published.boardAux.board0074',
-      BigInt(643),
-      new Date('2024-12-09T23:07:37.423Z'),
+      BigInt(652),
+      new Date('2024-12-26T13:10:08.048'),
       'Zoe Invitation',
       'set',
       0,
     ),
     new BoardAux(
       'published.boardAux.board01744',
-      BigInt(643),
-      new Date('2024-12-09T23:07:37.423Z'),
+      BigInt(652),
+      new Date('2024-12-26T13:10:08.048'),
       'USDT_axl',
       'nat',
       6,
     ),
-    new BoardAux('published.boardAux.board0257', BigInt(643), new Date('2024-12-09T23:07:37.423Z'), 'IST', 'nat', 6),
+    new BoardAux('published.boardAux.board0257', BigInt(652), new Date('2024-12-26T13:10:08.048'), 'IST', 'nat', 6),
     new BoardAux(
       'published.boardAux.board03040',
-      BigInt(643),
-      new Date('2024-12-09T23:07:37.423Z'),
+      BigInt(652),
+      new Date('2024-12-26T13:10:08.048'),
       'USDC_axl',
       'nat',
       6,
@@ -117,10 +121,10 @@ subqlTest(
 );
 
 const oraclePriceDaily = new OraclePriceDaily(
-  'ATOM-USD:20241209',
-  20241209,
-  BigInt(506),
-  new Date('2024-12-09T23:03:17.000Z'),
+  'ATOM-USD:20241226',
+  20241226,
+  BigInt(509),
+  new Date('2024-12-26T13:05:39.000'),
 );
 
 oraclePriceDaily.typeInAmountLast = BigInt(1000000);
@@ -133,8 +137,8 @@ oraclePriceDaily.metricsCount = BigInt(1);
 
 const oraclePrice = new OraclePrice(
   'ATOM-USD',
-  BigInt(506),
-  new Date('2024-12-09T23:03:17.564Z'),
+  BigInt(509),
+  new Date('2024-12-26T13:05:39.056'),
   'ATOM-USD',
   BigInt(1000000),
   BigInt(12010000),
@@ -143,8 +147,8 @@ const oraclePrice = new OraclePrice(
 );
 
 subqlTest(
-  'oraclePrice at block 506',
-  506,
+  'oraclePrice at block 509',
+  509,
   [],
   [oraclePriceDaily, oraclePrice],
 
@@ -152,11 +156,11 @@ subqlTest(
 );
 
 const psmMetricsDaily = new PsmMetricsDaily(
-  'published.psm.IST.USDC_axl.metrics:20241207',
+  'published.psm.IST.USDC_axl.metrics:20241226',
   'published.psm.IST.USDC_axl.metrics',
-  20241207,
+  20241226,
   BigInt(35),
-  new Date('2024-12-07T02:03:32.000Z'),
+  new Date('2024-12-26T12:49:56.000'),
 );
 
 psmMetricsDaily.denom = 'USDC_axl';
@@ -170,7 +174,7 @@ psmMetricsDaily.metricsCount = BigInt(1);
 const psmMetrics = new PsmMetrics(
   'published.psm.IST.USDC_axl.metrics',
   BigInt(35),
-  new Date('2024-12-07T02:03:32.920Z'),
+  new Date('2024-12-26T12:49:56.863'),
   'USDC_axl',
   'USDC_axl',
   BigInt(0),
@@ -185,7 +189,7 @@ subqlTest('psmMetrics at block 35', 35, [], [psmMetricsDaily, psmMetrics], 'hand
 const psmGovernance = new PsmGovernance(
   'published.psm.IST.USDT_axl.governance',
   BigInt(35),
-  new Date('2024-12-07T02:03:32.920Z'),
+  new Date('2024-12-26T12:49:56.863'),
   'USDT_axl',
   'USDT_axl',
   BigInt(1000000000),
