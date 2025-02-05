@@ -1,8 +1,29 @@
-# SubQuery - Example Project for Agoric
+# Agoric indexer
 
-[SubQuery](https://subquery.network) is a fast, flexible, and reliable open-source data indexer that provides you with custom APIs for your web3 project across all of our supported networks. To learn about how to get started with SubQuery, [visit our docs](https://academy.subquery.network).
+This uses [SubQuery](https://subquery.network) to index all transfer events and messages on the Agoric chain.
 
-**This SubQuery project indexes all transfer events and messages on Agoric**
+## Usage
+
+Explorer URL: https://explorer.subquery.network/subquery/agoric-labs/agoric-mainnet-v2
+
+API Endpoint: https://api.subquery.network/sq/agoric-labs/agoric-mainnet-v2
+
+The indexer query service is used by the [inter dashboard](https://info.inter.trade/) and [its code](https://github.com/agoric-labs/agoric-inter-dashboard/blob/master/src/queries.ts) includes various examples of query usage.
+
+## Data
+
+The indexer uses state change events to index most of the data also available from vstorage:
+
+- Metadata about the indexer. e.g. lastProcessedHeight
+- PSM metrics (minted pool balances, governance parameters)
+- Active vault data (count, total balance by collateral type)
+- Daily metrics (vault metrics, collateral, debt, oracle prices)
+- Reserve metrics (shortfall balances, allocation values)
+- Wallets
+
+Note: as of June 13th, 2024, this indexer does not include transactions, account balances, or raw block data.
+
+## Project boilerplate
 
 ## Start
 
