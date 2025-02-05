@@ -23,6 +23,14 @@ The indexer uses state change events to index most of the data also available fr
 
 Note: as of June 13th, 2024, this indexer does not include transactions, account balances, or raw block data.
 
+### Performance
+
+Sources of latency:
+
+- Waiting for new blocks. RPC itself can be delayed.
+- Processing time of blocks.
+- DB delay. OnFinality has some caching which batches DB operations.
+
 ## Developing
 
 ### With A3P
