@@ -327,10 +327,27 @@ enum FastUsdcTransactionStatus {
 
 type FastUsdcTransaction @entity {
   id: ID!
+  """
+  EVM address from which the USCD funds originated
+  """
   sourceAddress: String! @index
+  The CAIP-10 or Cosmos Bech32 address to receive the USDC
+  """
   eud: String!
+  """
+  The amount of USDC to send (in 6 decimal format)
+  """
   usdcAmount: BigInt!
+  """
+  The last reported status of the transaction
+  """
   status: FastUsdcTransactionStatus! @index
+  """
+  Payment to the contract
+  """
   contractFee: BigInt
+  """
+  Payment to the liquidity pool underwriting the transaction
+  """
   poolFee: BigInt
 }
