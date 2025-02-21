@@ -23,10 +23,10 @@
   "author": "Agoric OpCo",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@agoric/fast-usdc": "0.2.0-u18.0",
-    "@agoric/inter-protocol": "0.17.0-u18.6",
-    "@agoric/internal": "0.4.0-u18.1",
-    "@agoric/smart-wallet": "0.5.4-u18.5",
+    "@agoric/fast-usdc": "0.1.1-dev-7186681.0",
+    "@agoric/inter-protocol": "0.16.2-dev-7186681.0",
+    "@agoric/internal": "0.3.3-dev-7186681.0",
+    "@agoric/smart-wallet": "0.5.4-dev-7186681.0",
     "@cosmjs/stargate": "^0.32.4",
     "@endo/eventual-send": "^1.2.8",
     "@subql/cli": "^5.6.0",
@@ -34,7 +34,7 @@
     "@subql/testing": "latest",
     "execa": "^9.5.2",
     "prettier": "^3.4.2",
-    "ses": "^1.10.0",
+    "ses": "^1.11.0",
     "starknet": "6.21.0",
     "typescript": "^5.7.3"
   },
