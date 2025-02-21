@@ -18,10 +18,10 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
       // TODO include risksIdentified
       t = FastUsdcTransaction.create({
         id,
-        // TODO include blockTimestamp
         // FIXME decode from address hook
         eud: payload.evidence.aux.recipientAddress,
         sourceAddress: payload.evidence.tx.sender,
+        sourceBlockTimestamp: payload.evidence.blockTimestamp,
         sourceChainId: payload.evidence.chainId,
         status: payload.status,
         usdcAmount: payload.evidence.tx.amount,
