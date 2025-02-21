@@ -99,7 +99,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@agoric/cosmic-proto@npm:0.4.1-dev-7186681.0+7186681":
+"@agoric/cosmic-proto@npm:0.4.1-dev-7186681.0, @agoric/cosmic-proto@npm:0.4.1-dev-7186681.0+7186681":
   version: 0.4.1-dev-7186681.0
   resolution: "@agoric/cosmic-proto@npm:0.4.1-dev-7186681.0"
   dependencies:
@@ -307,7 +307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@agoric/smart-wallet@npm:0.5.4-dev-7186681.0, @agoric/smart-wallet@npm:0.5.4-dev-7186681.0+7186681":
+"@agoric/smart-wallet@npm:0.5.4-dev-7186681.0":
   version: 0.5.4-dev-7186681.0
   resolution: "@agoric/smart-wallet@npm:0.5.4-dev-7186681.0"
   dependencies:

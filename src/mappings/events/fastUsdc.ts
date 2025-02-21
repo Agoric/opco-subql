@@ -3,6 +3,8 @@ import type { StreamCell } from '@agoric/internal/src/lib-chainStorage';
 import type { CosmosBlock } from '@subql/types-cosmos';
 import assert from 'assert';
 import { FastUsdcTransaction, FastUsdcTransactionStatus } from '../../types';
+// @ts-ignore not there until after codegen, but codegen won't complete if this errors
+import { decodeAddressHook } from '@agoric/cosmic-proto/address-hooks.js';
 
 export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module: string, path: string) => {
   async function saveTransaction(payload: TransactionRecord): Promise<Promise<any>[]> {
@@ -15,11 +17,14 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
     if (payload.status === FastUsdcTransactionStatus.OBSERVED) {
       assert(payload['evidence'], 'implied by OBSERVED');
       assert.equal(payload.evidence.txHash, id, 'txHash must match path');
-      // TODO include risksIdentified
+      const decoded = decodeAddressHook(payload.evidence.aux.recipientAddress);
+      const { EUD } = decoded.query;
+      assert(typeof EUD === 'string', 'EUD must be a string');
+
+      assert(!t, 'transaction already exists');
       t = FastUsdcTransaction.create({
         id,
-        // FIXME decode from address hook
-        eud: payload.evidence.aux.recipientAddress,
+        eud: EUD,
         sourceAddress: payload.evidence.tx.sender,
         sourceBlockTimestamp: payload.evidence.blockTimestamp,
         sourceChainId: payload.evidence.chainId,
