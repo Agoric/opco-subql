@@ -30,6 +30,7 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
         sourceChainId: payload.evidence.chainId,
         status: payload.status,
         usdcAmount: payload.evidence.tx.amount,
+        risksIdentified: payload.risksIdentified || [],
       });
     } else {
       const found = await FastUsdcTransaction.get(id);
