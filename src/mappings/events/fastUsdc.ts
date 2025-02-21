@@ -30,17 +30,25 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
         status: payload.status,
         usdcAmount: payload.evidence.tx.amount,
         risksIdentified: payload.risksIdentified || [],
+        heightObserved: block.header.height,
       });
       return [newT.save()];
     }
 
+    // Always update the status and mark the height
     t.status = payload.status;
+    t.statusHeight = block.header.height;
+
     switch (payload.status) {
       case FastUsdcTransactionStatus.OBSERVED:
         throw new Error('OBSERVED for extant transaction');
+      case FastUsdcTransactionStatus.ADVANCED:
+        t.heightDisbursed = block.header.height;
+        break;
       case FastUsdcTransactionStatus.DISBURSED:
         t.contractFee = payload.split.ContractFee.value;
         t.poolFee = payload.split.PoolFee.value;
+        t.heightDisbursed = block.header.height;
         break;
       default:
       // Nothing more to do than set the status
