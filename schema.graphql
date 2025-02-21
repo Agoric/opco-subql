@@ -331,6 +331,11 @@ type FastUsdcTransaction @entity {
   EVM address from which the USCD funds originated
   """
   sourceAddress: String! @index
+  """
+  EIP-155 chain ID from which the USCD funds originated
+  """
+  sourceChainId: Int! @index
+  """
   The CAIP-10 or Cosmos Bech32 address to receive the USDC
   """
   eud: String!

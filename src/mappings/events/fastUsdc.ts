@@ -15,10 +15,14 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
     if (payload.status === FastUsdcTransactionStatus.OBSERVED) {
       assert(payload['evidence'], 'implied by OBSERVED');
       assert.equal(payload.evidence.txHash, id, 'txHash must match path');
+      // TODO include risksIdentified
       t = FastUsdcTransaction.create({
         id,
+        // TODO include blockTimestamp
+        // FIXME decode from address hook
         eud: payload.evidence?.aux.recipientAddress,
         sourceAddress: payload.evidence?.tx.sender,
+        sourceChainId: payload.evidence.chainId,
         status: payload.status,
         usdcAmount: payload.evidence?.tx.amount,
       });
