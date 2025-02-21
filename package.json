@@ -48,6 +48,7 @@
   },
   "packageManager": "yarn@4.6.0",
   "resolutions": {
-    "@agoric/smart-wallet@npm:0.5.4-dev-7186681.0+7186681": "patch:@agoric/smart-wallet@npm%3A0.5.4-dev-7186681.0#~/.yarn/patches/@agoric-smart-wallet-npm-0.5.4-dev-7186681.0-de3e51742e.patch"
+    "@agoric/smart-wallet@npm:0.5.4-dev-7186681.0+7186681": "patch:@agoric/smart-wallet@npm%3A0.5.4-dev-7186681.0#~/.yarn/patches/@agoric-smart-wallet-npm-0.5.4-dev-7186681.0-de3e51742e.patch",
+    "@subql/x-cosmology-telescope@npm:^1.4.14": "patch:@subql/x-cosmology-telescope@npm%3A1.4.14#~/.yarn/patches/@subql-x-cosmology-telescope-npm-1.4.14-f7014b8f33.patch"
   }
 }
