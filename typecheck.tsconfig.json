@@ -10,9 +10,5 @@
     // UNTIL package-json-type and ejs packages have types
     "skipLibCheck": true,
     "lib": ["es2021"]
-  },
-  "exclude": [
-    // generated code has typecheck error
-    "src/types/proto-interfaces/**"
-  ]
+  }
 }
