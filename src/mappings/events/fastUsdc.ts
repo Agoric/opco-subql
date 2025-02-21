@@ -13,16 +13,15 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
     const id = path.split('.').pop();
     assert(id, 'saveTransaction must only be called on transaction paths');
 
-    let t: FastUsdcTransaction;
-    if (payload.status === FastUsdcTransactionStatus.OBSERVED) {
+    const t = await FastUsdcTransaction.get(id);
+    if (!t) {
+      assert(payload.status === FastUsdcTransactionStatus.OBSERVED, 'new status without a previous OBSERVED');
       assert(payload['evidence'], 'implied by OBSERVED');
       assert.equal(payload.evidence.txHash, id, 'txHash must match path');
       const decoded = decodeAddressHook(payload.evidence.aux.recipientAddress);
       const { EUD } = decoded.query;
       assert(typeof EUD === 'string', 'EUD must be a string');
-
-      assert(!t, 'transaction already exists');
-      t = FastUsdcTransaction.create({
+      const newT = FastUsdcTransaction.create({
         id,
         eud: EUD,
         sourceAddress: payload.evidence.tx.sender,
@@ -32,15 +31,19 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
         usdcAmount: payload.evidence.tx.amount,
         risksIdentified: payload.risksIdentified || [],
       });
-    } else {
-      const found = await FastUsdcTransaction.get(id);
-      assert(found, 'no matching transaction');
-      t = found;
-      t.status = payload.status;
-      if (payload.split) {
+      return [newT.save()];
+    }
+
+    t.status = payload.status;
+    switch (payload.status) {
+      case FastUsdcTransactionStatus.OBSERVED:
+        throw new Error('OBSERVED for extant transaction');
+      case FastUsdcTransactionStatus.DISBURSED:
         t.contractFee = payload.split.ContractFee.value;
         t.poolFee = payload.split.PoolFee.value;
-      }
+        break;
+      default:
+      // Nothing more to do than set the status
     }
 
     return [t.save()];
