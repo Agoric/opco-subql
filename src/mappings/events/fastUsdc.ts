@@ -20,11 +20,11 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
         id,
         // TODO include blockTimestamp
         // FIXME decode from address hook
-        eud: payload.evidence?.aux.recipientAddress,
-        sourceAddress: payload.evidence?.tx.sender,
+        eud: payload.evidence.aux.recipientAddress,
+        sourceAddress: payload.evidence.tx.sender,
         sourceChainId: payload.evidence.chainId,
         status: payload.status,
-        usdcAmount: payload.evidence?.tx.amount,
+        usdcAmount: payload.evidence.tx.amount,
       });
     } else {
       const found = await FastUsdcTransaction.get(id);
