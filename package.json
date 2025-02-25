@@ -29,7 +29,7 @@
     "@agoric/smart-wallet": "0.5.4-u18.5",
     "@cosmjs/stargate": "^0.32.4",
     "@endo/eventual-send": "^1.2.8",
-    "@subql/cli": "^5.6.0",
+    "@subql/cli": "^5.7.0",
     "@subql/node-cosmos": "^4.5.1",
     "@subql/testing": "latest",
     "execa": "^9.5.2",
