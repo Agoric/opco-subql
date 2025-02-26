@@ -53,7 +53,7 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
       case FastUsdcTransactionStatus.OBSERVED:
         throw new Error('OBSERVED for extant transaction');
       case FastUsdcTransactionStatus.ADVANCED:
-        t.heightDisbursed = height;
+        t.heightAdvanced = height;
         break;
       case FastUsdcTransactionStatus.DISBURSED:
         t.contractFee = payload.split.ContractFee.value;
