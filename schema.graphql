@@ -68,18 +68,21 @@ type FastUsdcTransaction @entity {
   """
   poolFee: BigInt
 
-  # The following heights are of key states of the happy path. Unhappy outcomes require investigation with other tools.
+  # The following heights/times are of key states of the happy path. Unhappy outcomes require investigation with other tools.
 
   """
   The block height of the Agoric chain at which the transaction was Observed
   """
   heightObserved: Int
+  timeObserved: Date
   """
   The block height of the Agoric chain at which the transaction was Advanced to the EUD
   """
   heightAdvanced: Int
+  timeAdvanced: Date
   """
   The block height of the Agoric chain at which funds were Disbursed back to the LP
   """
   heightDisbursed: Int
+  timeDisbursed: Date
 }
