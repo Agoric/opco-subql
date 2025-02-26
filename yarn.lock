@@ -280,7 +280,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@agoric/orchestration@npm:0.1.1-dev-7186681.0+7186681":
+"@agoric/orchestration@npm:0.1.1-dev-7186681.0":
   version: 0.1.1-dev-7186681.0
   resolution: "@agoric/orchestration@npm:0.1.1-dev-7186681.0"
   dependencies:
@@ -304,6 +304,33 @@ __metadata:
     "@endo/patterns": "npm:^1.4.8"
     "@noble/hashes": "npm:^1.5.0"
   checksum: 10c0/a3eda601d4db997b28592893df9a6044e828736060215f522d5ef51514820ab6fd8e27419a158f5bfeb2ee85a98ea7ec891048b3c117f41522d02072f7f1dbe9
+  languageName: node
+  linkType: hard
+
+"@agoric/orchestration@patch:@agoric/orchestration@npm%3A0.1.1-dev-7186681.0#~/.yarn/patches/@agoric-orchestration-npm-0.1.1-dev-7186681.0-53a06224f4.patch":
+  version: 0.1.1-dev-7186681.0
+  resolution: "@agoric/orchestration@patch:@agoric/orchestration@npm%3A0.1.1-dev-7186681.0#~/.yarn/patches/@agoric-orchestration-npm-0.1.1-dev-7186681.0-53a06224f4.patch::version=0.1.1-dev-7186681.0&hash=b35e6b"
+  dependencies:
+    "@agoric/async-flow": "npm:0.1.1-dev-7186681.0+7186681"
+    "@agoric/cosmic-proto": "npm:0.4.1-dev-7186681.0+7186681"
+    "@agoric/ertp": "npm:0.16.3-dev-7186681.0+7186681"
+    "@agoric/internal": "npm:0.3.3-dev-7186681.0+7186681"
+    "@agoric/network": "npm:0.1.1-dev-7186681.0+7186681"
+    "@agoric/notifier": "npm:0.6.3-dev-7186681.0+7186681"
+    "@agoric/store": "npm:0.9.3-dev-7186681.0+7186681"
+    "@agoric/time": "npm:0.3.3-dev-7186681.0+7186681"
+    "@agoric/vat-data": "npm:0.5.3-dev-7186681.0+7186681"
+    "@agoric/vats": "npm:0.15.2-dev-7186681.0+7186681"
+    "@agoric/vow": "npm:0.1.1-dev-7186681.0+7186681"
+    "@agoric/zoe": "npm:0.26.3-dev-7186681.0+7186681"
+    "@agoric/zone": "npm:0.2.3-dev-7186681.0+7186681"
+    "@endo/base64": "npm:^1.0.9"
+    "@endo/errors": "npm:^1.2.9"
+    "@endo/far": "npm:^1.1.10"
+    "@endo/marshal": "npm:^1.6.3"
+    "@endo/patterns": "npm:^1.4.8"
+    "@noble/hashes": "npm:^1.5.0"
+  checksum: 10c0/05b252cc021566d21cd3623167026b63c78044abafb769be3c8d84e1e5b734b0153c915e97a9af1827c46374387b9a5fdd38f02ef1cf801f1f0fa663df280a13
   languageName: node
   linkType: hard
 
