@@ -1,0 +1,24 @@
+diff --git a/src/types.d.ts b/src/types.d.ts
+index 82159bef3e0c1f9f02b4c694955b4df9ba777e19..09c56b4fff8b1bad39508ed23ff86037c17b2b6d 100644
+--- a/src/types.d.ts
++++ b/src/types.d.ts
+@@ -1,4 +1,6 @@
+ /** @file Rollup of all type definitions in the package, for local import and external export */
++// For ZCF which is only available ambiently
++/// <reference types="@agoric/zoe/src/contractFacet/types-ambient" />
+ export type * from './chain-info.js';
+ export type * from './cosmos-api.js';
+ export type * from './ethereum-api.js';
+diff --git a/src/types.ts b/src/types.ts
+index 7a0b23566e4aaf0f71e3830fb304eea4a950e8eb..e20fdc40b18b8fb910fdb80a9f54f8b04bfe2923 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -1,5 +1,8 @@
+ /** @file Rollup of all type definitions in the package, for local import and external export */
+ 
++// For ZCF which is only available ambiently
++/// <reference types="@agoric/zoe/src/contractFacet/types-ambient" />
++
+ export type * from './chain-info.js';
+ export type * from './cosmos-api.js';
+ export type * from './ethereum-api.js';
