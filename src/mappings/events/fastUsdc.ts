@@ -19,6 +19,7 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
     const id = path.split('.').pop();
     assert(id, 'saveTransaction must only be called on transaction paths');
     const { height } = block.header;
+    const time = block.header.time as Date;
 
     const t = await FastUsdcTransaction.get(id);
     if (!t) {
@@ -41,6 +42,7 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
         usdcAmount: payload.evidence.tx.amount,
         risksIdentified: payload.risksIdentified || [],
         heightObserved: height,
+        timeObserved: time,
       });
       return [newT.save()];
     }
@@ -54,11 +56,13 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
         throw new Error('OBSERVED for extant transaction');
       case FastUsdcTransactionStatus.ADVANCED:
         t.heightAdvanced = height;
+        t.timeAdvanced = time;
         break;
       case FastUsdcTransactionStatus.DISBURSED:
         t.contractFee = payload.split.ContractFee.value;
         t.poolFee = payload.split.PoolFee.value;
         t.heightDisbursed = height;
+        t.timeDisbursed = time;
         break;
       default:
       // Nothing more to do than set the status
