@@ -37,9 +37,9 @@ const startBlock = {
   local: 1,
   docker: 1,
   /** Eval of FUSD-Start */
-  startFusdc: 18396254,
-  /** First Fast USDC transaction on main */
-  main: 18454947,
+  main: 18396254,
+  /** Earliest Fast USDC transaction I saw on main, but can't be certain */
+  firstTransaction: 18454946,
   /** Launch of Inter Protocol */
   upgrade8: 7179262,
 };
