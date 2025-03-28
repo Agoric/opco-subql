@@ -30,7 +30,7 @@
     "@cosmjs/stargate": "^0.32.4",
     "@endo/eventual-send": "^1.2.8",
     "@subql/cli": "^5.7.0",
-    "@subql/node-cosmos": "^4.5.1",
+    "@subql/node-cosmos": "^4.6.0",
     "@subql/testing": "latest",
     "execa": "^9.5.2",
     "prettier": "^3.4.2",
