@@ -64,3 +64,4 @@ Thumbs.db
 !.yarn/versions
 .aider*
 .env
+.qodo
