@@ -105,19 +105,18 @@ exports.fetchAndStoreTransactions = async (req, res) => {
 
       hasNextPage = data.fastUsdcTransactions.pageInfo.hasNextPage;
       endCursor = data.fastUsdcTransactions.pageInfo.endCursor;
-
     } while (hasNextPage);
 
     console.log(`Finished fetching. Total transactions: ${allTransactions.length}`);
 
     const rows = allTransactions.map((txn) => {
-       // Ensure risksIdentified is handled correctly (null, array, or string)
-       let risksIdentifiedStr = txn.risksIdentified;
-       if (Array.isArray(txn.risksIdentified)) {
-         risksIdentifiedStr = txn.risksIdentified.join(', ');
-       } else if (txn.risksIdentified === null || typeof txn.risksIdentified === 'undefined') {
-         risksIdentifiedStr = ''; // Represent null/undefined as empty string in the sheet
-       }
+      // Ensure risksIdentified is handled correctly (null, array, or string)
+      let risksIdentifiedStr = txn.risksIdentified;
+      if (Array.isArray(txn.risksIdentified)) {
+        risksIdentifiedStr = txn.risksIdentified.join(', ');
+      } else if (txn.risksIdentified === null || typeof txn.risksIdentified === 'undefined') {
+        risksIdentifiedStr = ''; // Represent null/undefined as empty string in the sheet
+      }
 
       return [
         txn.id,
