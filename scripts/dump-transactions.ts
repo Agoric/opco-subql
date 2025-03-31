@@ -8,57 +8,50 @@
  */
 
 // module
-export { };
+export {};
 
 /**
  * Fetches GraphQL data, converts it to a table, and prints it as TSV.
  * @param {string} graphqlEndpoint - The GraphQL endpoint URL.
  * @param {string} query - The GraphQL query string.
  */
-export async function dumpTransactions(
-    graphqlEndpoint: string,
-    query: string,
-): Promise<void> {
-    try {
-        // Fetch the GraphQL response
-        const response = await fetch(graphqlEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query }),
-        });
+export async function dumpTransactions(graphqlEndpoint: string, query: string): Promise<void> {
+  try {
+    // Fetch the GraphQL response
+    const response = await fetch(graphqlEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    });
 
-        if (!response.ok) {
-            throw new Error(
-                `GraphQL request failed with status ${response.status}: ${response.statusText}`,
-            );
-        }
-
-        const { data } = await response.json();
-
-        if (!data) {
-            throw new Error('No data received from GraphQL response');
-        }
-
-        const transactions = data.fastUsdcTransactions.edges.map(
-            (edge: any) => edge.node,
-        );
-
-        // Convert the data to a table format
-        const rows: string[][] = [];
-        const headers = Object.keys(transactions[0]);
-        rows.push(headers);
-
-        for (const txn of transactions) {
-            rows.push(headers.map(header => String(txn[header] ?? '')));
-        }
-
-        // Print the table as TSV
-        for (const row of rows) {
-            console.log(row.join('\t'));
-        }
-    } catch (error) {
-        console.error('Error dumping transactions:', error);
+    if (!response.ok) {
+      throw new Error(`GraphQL request failed with status ${response.status}: ${response.statusText}`);
     }
+
+    const { data } = await response.json();
+
+    if (!data) {
+      throw new Error('No data received from GraphQL response');
+    }
+
+    const transactions = data.fastUsdcTransactions.edges.map((edge: any) => edge.node);
+
+    // Convert the data to a table format
+    const rows: string[][] = [];
+    const headers = Object.keys(transactions[0]);
+    rows.push(headers);
+
+    for (const txn of transactions) {
+      rows.push(headers.map((header) => String(txn[header] ?? '')));
+    }
+
+    // Print the table as TSV
+    for (const row of rows) {
+      console.log(row.join('\t'));
+    }
+  } catch (error) {
+    console.error('Error dumping transactions:', error);
+  }
 }
 
 const graphqlEndpoint = 'https://api.subquery.network/sq/agoric-labs/internal';
@@ -90,6 +83,6 @@ query TransactionsQuery {
   }
 `;
 
-dumpTransactions(graphqlEndpoint, query).catch(err => {
-    console.error('Unhandled error:', err);
+dumpTransactions(graphqlEndpoint, query).catch((err) => {
+  console.error('Unhandled error:', err);
 });
