@@ -25,7 +25,7 @@ enum FastUsdcTransactionStatus {
 }
 
 type FastUsdcTransaction @entity {
-  id: ID!
+  id: ID! @index(unique: true)
   """
   EVM address from which the USCD funds originated
   """

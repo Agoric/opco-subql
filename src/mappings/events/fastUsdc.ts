@@ -21,6 +21,8 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
     const { height } = block.header;
     const time = block.header.time as Date;
 
+    // XXX this assumes that records will be processed in order,
+    // so multiple indexer workers is not supported.
     const t = await FastUsdcTransaction.get(id);
     if (!t) {
       if (payload.status !== FastUsdcTransactionStatus.OBSERVED) {
