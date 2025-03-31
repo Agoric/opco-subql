@@ -31,11 +31,20 @@ async function appendToGoogleSheet(data) {
 
 exports.fetchAndStoreTransactions = async (req, res) => {
   try {
-    console.log('Fetching transactions from GraphQL API...');
+    console.log('Fetching all transactions from GraphQL API...');
 
-    const query = `
-        query TransactionsQuery {
-            fastUsdcTransactions(orderBy: SOURCE_BLOCK_TIMESTAMP_DESC) {
+    let allTransactions = [];
+    let hasNextPage = true;
+    let endCursor = null;
+
+    do {
+      const query = `
+        query TransactionsQuery($after: Cursor) {
+            fastUsdcTransactions(orderBy: SOURCE_BLOCK_TIMESTAMP_DESC, after: $after) {
+              pageInfo {
+                endCursor
+                hasNextPage
+              }
               edges {
                     node {
                       id
@@ -60,25 +69,56 @@ exports.fetchAndStoreTransactions = async (req, res) => {
             }
         }`;
 
-    const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query }),
-    });
+      console.log(`Fetching page with cursor: ${endCursor}`);
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          variables: { after: endCursor },
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error(`GraphQL request failed: ${response.statusText}`);
-    }
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`GraphQL request failed: ${response.statusText} - ${errorBody}`);
+      }
 
-    const { data } = await response.json();
-    if (!data) throw new Error('No data received from GraphQL API');
+      const { data, errors } = await response.json();
 
-    console.log('Raw GraphQL response:', JSON.stringify(data, null, 2));
+      if (errors) {
+        console.error('GraphQL errors:', JSON.stringify(errors, null, 2));
+        throw new Error(`GraphQL query returned errors: ${JSON.stringify(errors)}`);
+      }
+      if (!data || !data.fastUsdcTransactions) {
+        console.warn('No data or fastUsdcTransactions received in page response:', data);
+        // Decide if this should be an error or just break the loop
+        hasNextPage = false; // Stop if no data is returned
+        continue; // Skip processing this page
+      }
 
-    const transactions = data.fastUsdcTransactions.edges.map((edge) => edge.node);
-    console.log(`Fetched ${transactions.length} transactions`);
+      // console.log('Raw GraphQL page response:', JSON.stringify(data, null, 2)); // Optional: log each page
 
-    const rows = transactions.map((txn) => {
+      const pageTransactions = data.fastUsdcTransactions.edges.map((edge) => edge.node);
+      allTransactions = allTransactions.concat(pageTransactions);
+      console.log(`Fetched ${pageTransactions.length} transactions this page. Total: ${allTransactions.length}`);
+
+      hasNextPage = data.fastUsdcTransactions.pageInfo.hasNextPage;
+      endCursor = data.fastUsdcTransactions.pageInfo.endCursor;
+
+    } while (hasNextPage);
+
+    console.log(`Finished fetching. Total transactions: ${allTransactions.length}`);
+
+    const rows = allTransactions.map((txn) => {
+       // Ensure risksIdentified is handled correctly (null, array, or string)
+       let risksIdentifiedStr = txn.risksIdentified;
+       if (Array.isArray(txn.risksIdentified)) {
+         risksIdentifiedStr = txn.risksIdentified.join(', ');
+       } else if (txn.risksIdentified === null || typeof txn.risksIdentified === 'undefined') {
+         risksIdentifiedStr = ''; // Represent null/undefined as empty string in the sheet
+       }
+
       return [
         txn.id,
         txn.sourceAddress,
@@ -90,7 +130,7 @@ exports.fetchAndStoreTransactions = async (req, res) => {
         txn.statusHeight,
         txn.contractFee,
         txn.poolFee,
-        Array.isArray(txn.risksIdentified) ? txn.risksIdentified.join(', ') : txn.risksIdentified, // Convert array to string
+        risksIdentifiedStr,
         txn.heightObserved,
         txn.heightAdvanced,
         txn.heightDisbursed,
