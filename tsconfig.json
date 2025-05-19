@@ -12,7 +12,7 @@
     "module": "commonjs",
     "outDir": "dist",
     "rootDir": "src",
-    "target": "es2017",
+    "target": "ES2021",
     "lib": ["es2021"]
   },
   "include": [
