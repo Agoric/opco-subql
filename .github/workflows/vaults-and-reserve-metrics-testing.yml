@@ -61,31 +61,31 @@ jobs:
         run: ./scripts/validateData.mjs
         env:
           entity: vaultManagerMetrics
-          blockHeight: 1226
+          blockHeight: 1228
 
       - name: Test VaultManagerMetricsDaily
         run: ./scripts/validateData.mjs
         env:
           entity: vaultManagerMetricsDailies
-          blockHeight: 1226
+          blockHeight: 1228
 
       - name: Test ReserveMetrics
         run: ./scripts/validateData.mjs
         env:
           entity: reserveMetrics
-          blockHeight: 1226
+          blockHeight: 1228
 
       - name: Test ReserveAllocationMetrics
         run: ./scripts/validateData.mjs
         env:
           entity: reserveAllocationMetrics
-          blockHeight: 1226
+          blockHeight: 1228
 
       - name: Test ReserveAllocationMetricsDaily
         run: ./scripts/validateData.mjs
         env:
           entity: reserveAllocationMetricsDailies
-          blockHeight: 1226
+          blockHeight: 1228
 
       - name: Notify About Failure
         if: >
