@@ -54,7 +54,7 @@ export async function dumpTransactions(graphqlEndpoint: string, query: string): 
   }
 }
 
-const graphqlEndpoint = 'https://api.subquery.network/sq/agoric-labs/internal';
+const graphqlEndpoint = 'https://index-api.onfinality.io/sq/agoric-labs/internal';
 const query = `
 query TransactionsQuery {
     fastUsdcTransactions(orderBy: SOURCE_BLOCK_TIMESTAMP_DESC) {
