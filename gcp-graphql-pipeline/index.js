@@ -2,7 +2,7 @@ const { google } = require('googleapis');
 
 const SPREADSHEET_ID = '15CZGF-GyqfimwZgrkFTIAkp8xEfHlLQhkp83flXqI84';
 const SHEET_NAME = 'live!A2'; // First row is for the existing header
-const GRAPHQL_ENDPOINT = 'https://api.subquery.network/sq/agoric-labs/internal';
+const GRAPHQL_ENDPOINT = 'https://index-api.onfinality.io/sq/agoric-labs/internal';
 
 async function appendToGoogleSheet(data) {
   const auth = new google.auth.GoogleAuth({
