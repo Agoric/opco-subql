@@ -13,6 +13,7 @@ type StateChangeEvent @entity {
   body: String!
 }
 
+# NB: Keep synced with https://github.com/Agoric/agoric-sdk/blob/8dea11ab0021a67168870414781e2459f2817bf1/packages/fast-usdc/src/constants.js#L1-L26
 enum FastUsdcTransactionStatus {
   OBSERVED
   ADVANCING
@@ -22,6 +23,8 @@ enum FastUsdcTransactionStatus {
   FORWARDED
   FORWARD_FAILED
   DISBURSED
+  ADVANCE_SKIPPED
+  FORWARD_SKIPPED
 }
 
 type FastUsdcTransaction @entity {
