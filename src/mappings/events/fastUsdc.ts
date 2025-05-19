@@ -34,6 +34,11 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
       const decoded = decodeAddressHook(payload.evidence.aux.recipientAddress);
       const { EUD } = decoded.query;
       assert(typeof EUD === 'string', 'EUD must be a string');
+      // Early versions of the OCW used `Date.now()` for the timestamp https://github.com/SimplyStaking/agoric-ocw/commit/4278ffe91b86b008c4d972b456645f12bf86a8a3
+      // which is in milliseconds, but the block timestamp is in seconds.
+      if (payload.evidence.blockTimestamp > 1e12) {
+        payload.evidence.blockTimestamp = BigInt(payload.evidence.blockTimestamp) / 1000n;
+      }
       const newT = FastUsdcTransaction.create({
         id,
         eud: EUD,
