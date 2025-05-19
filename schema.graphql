@@ -25,7 +25,9 @@ enum FastUsdcTransactionStatus {
 }
 
 type FastUsdcTransaction @entity {
-  id: ID! @index(unique: true)
+  # XXX causes 'index can not be added on field id' due to https://github.com/subquery/subql/blob/9e16bcc35439d926a14b126adf2d4746fa187fdc/packages/utils/src/graphql/entities.ts#L215-L237
+  # id: ID! @index(unique: true)
+  id: ID!
   """
   EVM address from which the USCD funds originated
   """
