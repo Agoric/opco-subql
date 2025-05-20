@@ -21,10 +21,15 @@ export const transactionEventKit = (block: CosmosBlock, data: StreamCell, module
     const { height } = block.header;
     const time = block.header.time as Date;
 
-    // XXX this assumes that records will be processed in order,
-    // so multiple indexer workers is not supported.
     const t = await FastUsdcTransaction.get(id);
     if (!t) {
+      // NB: This really should not happen. The earlier entry in vstorage for any transaction
+      // is always an OBSERVED. I put this condition here because the indexer
+      // did fail at least once without it. I think it was when I started
+      // indexing with multiple workers and for that reason I thought the
+      // workers would proces blocks out of order. But the devs at OnFinality
+      // said: The workers allow fetching blocks out of order but they are still
+      // processed in order. (BLock 51 will always be processed after 50).
       if (payload.status !== FastUsdcTransactionStatus.OBSERVED) {
         console.error('new status ${payload.status} for ${id} without a previous OBSERVED');
         return [];
